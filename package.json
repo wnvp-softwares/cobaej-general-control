@@ -1,24 +1,29 @@
 {
   "name": "cobaej-general-control",
   "version": "1.0.0",
-  "description": "Descripcion: Software de control escolar, administrativo y aspectos generales del COBAEJ TBC #65 en Estipac, Jalisco\r *Este archivo sera usado como una vitacora de control de versiones, cambios, aspectos modificados y ambitos necesarios para el desarrollo adecuado del sistema*",
+  "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/wnvp-softwares/cobaej-general-control.git"
+    "start": "electron .",
+    "rebuild": "electron-rebuild"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/wnvp-softwares/cobaej-general-control/issues"
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.5.1",
+      "onFail": "download"
+    }
   },
-  "homepage": "https://github.com/wnvp-softwares/cobaej-general-control#readme",
+  "type": "commonjs",
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.4",
+    "electron": "34.0.0"
+  },
   "dependencies": {
-    "electron": "^30.0.0"
+    "better-sqlite3": "^12.10.0",
+    "remixicon": "^4.9.1"
   }
 }

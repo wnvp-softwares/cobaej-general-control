@@ -1,30 +1,33 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const path = require('path');
+
+const db = require('./database/database.js')
 
 /**
  * @param {string} nombreArchivo - El nombre del archivo HTML a cargar en la ventana.
- * @param {object} opciones - Opciones adicionales para la ventana.
  * @return {BrowserWindow} nuevaVentana - La instancia de la ventana creada.
  */
+function crearVentana(nombreArchivo) {
 
-function crearVentana(nombreArchivo, opciones = {}) {
-    const opcionesDefault = {
-        width: 1200,
-        height: 800,
-        webPreferences: Object.assign ({
+    const config = {
+        fullscreen: true,
+        webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js')
-        }, webPreferences)
+        }
     };
 
-    const configFinal = Object.assign({}, opcionesDefault, opciones);
+    const nuevaVentana = new BrowserWindow(config);
 
-    const nuevaVentana = new BrowserWindow(configFinal);
+    nuevaVentana.setMenu(null);
+
     nuevaVentana.loadFile(path.join(__dirname, `./interfaces/${nombreArchivo}`));
-    
+
     return nuevaVentana;
 }
+
+let cambiandoVista = false;
 
 app.whenReady().then(() => {
     crearVentana('ventanaInicio.html');
@@ -37,7 +40,26 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (!cambiandoVista && process.platform !== 'darwin') {
         app.quit();
     }
+});
+
+// ===== MODELOS IPC =====
+ipcMain.on('abrir-nueva-ventana', (event, nombreArchivo) => {
+    cambiandoVista = true;
+    
+    crearVentana(nombreArchivo);
+
+    const ventanaAnterior = BrowserWindow.fromWebContents(event.sender);
+
+    if (ventanaAnterior) {
+        ventanaAnterior.close();
+    }
+
+    cambiandoVista = false;
+});
+
+ipcMain.on('cerrar-programa', () => {
+    app.quit();
 });
