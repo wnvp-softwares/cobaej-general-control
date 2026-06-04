@@ -44,3 +44,23 @@ Descripcion: Software de control escolar, administrativo y aspectos generales de
     - Windows 10 +
     - MacOs
     - Linux (solo para prevenir)
+
+================================================================================================================
+
+***COMANDOS NECESARIOS A FUTURO***
+- pnpm install *El equivalente a npm i / npm install*
+- pnpm add -D electron@34.0.0 *Para la instalacion de la version especifica de electron*
+- pnpm add better-sqlite3
+- pnpm add @electron/rebuild
+- pnpm approve-builds *Para la ejecucion de scripts post-instalacio de librerias*
+- pnpm dlx @electron/rebuild *Runnear la primer rebuild y que el entorno de electron y sqlite se ejecuten de manera eficiente*
+- pnpm install remixicon --save *Solo es para instalar el paquete de iconos y logotipos usados en el sistema*
+
+================================================================================================================
+
+## A dia de hoy, se han hecho cambios y avances no tan relevantes:
+- **Creacion de estructura base, manteniendo contextos individuales sin exponer informacion para evitar filtrados**
+- **Creacion de base de datos en SQLite a base de un script SQL anteriormente aprovado**
+- **Se ha avanzado con las pantallas principales del sistema, o al menos, las primeras que verá el usuario** *Se está dando mucho enfoque en el UX*
+
+- ***Se han tenido multiples problemas con instalaciones de terceros y frameworks, debido a los cambios en las tecnologias como npm, Node y pnpm, lo que vuelte todo docker, un kgadero***
