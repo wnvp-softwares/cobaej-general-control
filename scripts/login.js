@@ -62,14 +62,14 @@ loginRef.addEventListener('click', () => {
     loginContenedor.classList.add('hidden');
     signContenedor.classList.remove('hidden');
 
-    alternarModalLogin();
+    alternarModalRegistro();
 });
 
 signRef.addEventListener('click', () => {
     signContenedor.classList.add('hidden');
     loginContenedor.classList.remove('hidden');
 
-    alternarModalRegistro();
+    alternarModalLogin();
 });
 
 /* -------------------------------------------------------------
@@ -205,4 +205,6 @@ formRegistro.addEventListener('submit', async (e) => {
 CARGA DEL DOM
 ------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
+    alternarModalRegistro();
+    alternarModalLogin();
 });
