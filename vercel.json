@@ -1,0 +1,13 @@
+{
+    "cleanUrls": true,
+    "rewrites": [
+        {
+            "source": "/dashboard",
+            "destination": "/interfaces/dashboard.html"
+        },
+        {
+            "source": "/verification",
+            "destination": "/interfaces/verification.html"
+        }
+    ]
+}
