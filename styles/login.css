@@ -167,6 +167,15 @@ form {
     justify-content: center;
 }
 
+fieldset {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+}
+
 .row-input {
     display: flex;
     flex-direction: row;

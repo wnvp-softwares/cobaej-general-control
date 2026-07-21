@@ -23,7 +23,7 @@ VARIABLE GLOBAL
 ------------------------------------------------------------- */
 
 const URL_BASE = 'https://cobaej-general-server.onrender.com/sicecobaej'
-let ARQUETIPO = 'docente' || 'alumno';
+let ARQUETIPO = 'docente';
 
 /* -------------------------------------------------------------
 FUNCIONES GENERALES
@@ -42,11 +42,17 @@ function seleccionarTipo(boton) {
 switchDocente.addEventListener('click', (e) => {
     seleccionarTipo(e.currentTarget);
     ARQUETIPO = 'docente';
+
+    alternarModalLogin();
+    alternarModalRegistro();
 });
 
 switchAlumno.addEventListener('click', (e) => {
     seleccionarTipo(e.currentTarget);
     ARQUETIPO = 'alumno';
+
+    alternarModalLogin();
+    alternarModalRegistro();
 });
 
 /* -------------------------------------------------------------
@@ -55,11 +61,15 @@ ALTERNAR ARQUETIPO DE REGISTRO
 loginRef.addEventListener('click', () => {
     loginContenedor.classList.add('hidden');
     signContenedor.classList.remove('hidden');
+
+    alternarModalLogin();
 });
 
 signRef.addEventListener('click', () => {
     signContenedor.classList.add('hidden');
     loginContenedor.classList.remove('hidden');
+
+    alternarModalRegistro();
 });
 
 /* -------------------------------------------------------------
@@ -79,6 +89,35 @@ function alternarTema() {
 }
 
 themeBtn.addEventListener('click', alternarTema);
+
+/* -------------------------------------------------------------
+ALTERNAR MODAL
+------------------------------------------------------------- */
+function alternarModalRegistro() {
+    document.querySelectorAll('#form-registro fieldset').forEach(fs => {
+        fs.disabled = true;
+        fs.classList.add('hidden');
+    });
+
+    const fieldSetActivo = document.getElementById(`arquetipo-${ARQUETIPO}`);
+    if (fieldSetActivo) {
+        fieldSetActivo.disabled = false;
+        fieldSetActivo.classList.remove('hidden');
+    }
+}
+
+function alternarModalLogin() {
+    document.querySelectorAll('#form-login fieldset').forEach(fs => {
+        fs.disabled = true;
+        fs.classList.add('hidden');
+    });
+
+    const fieldSetActivo = document.getElementById(`arquetipoLogin-${ARQUETIPO}`);
+    if (fieldSetActivo) {
+        fieldSetActivo.disabled = false;
+        fieldSetActivo.classList.remove('hidden');
+    }
+}
 
 /* -------------------------------------------------------------
 LANZAR FORMS

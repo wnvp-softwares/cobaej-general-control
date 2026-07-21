@@ -37,6 +37,10 @@
                 <h2>Iniciar Sesión</h2>
                 <label for="correo">Ingresa tu correo</label>
                 <input name="correo" type="email" placeholder="example@mail.com" required>
+                <fieldset id="arquetipoLogin-alumno" class="hidden" disabled>
+                    <label for="numero_control">Ingresa tu numero de control</label>
+                    <input name="numero_control" type="text" placeholder="Numero-Control-000" required>
+                </fieldset>
                 <label for="clave">Ingresa tu contraseña</label>
                 <input name="clave" type="password" placeholder="contraseña-segura-123" required>
 
@@ -53,8 +57,25 @@
                 <h2>Registrate</h2>
                 <label for="nombre">Ingresa tu nombre</label>
                 <input name="nombre" type="text" placeholder="Nombre Apellido Apellido" required>
-                <label for="correo">Ingresa tu correo</label>
-                <input name="correo" type="email" placeholder="example@mail.com" required>
+
+                <div class="row-input">
+                    <div class="pair">
+                        <label for="correo">Ingresa tu correo</label>
+                        <input name="correo" type="email" placeholder="example@mail.com" required>
+                    </div>
+
+                    <div class="pair">
+                        <fieldset id="arquetipo-docente" class="hidden" disabled>
+                            <label for="clave_registro">Ingresa la clave de registro</label>
+                            <input name="clave_registro" type="text" placeholder="Clave-Registro-XYZ" required>
+                        </fieldset>
+
+                        <fieldset id="arquetipo-alumno" class="hidden" disabled>
+                            <label for="numero_control">Ingresa el número de control</label>
+                            <input name="numero_control" type="text" placeholder="Numero-Control-000" required>
+                        </fieldset>
+                    </div>
+                </div>
 
                 <div class="row-input">
                     <div class="pair">
