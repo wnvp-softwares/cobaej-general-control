@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<script>
+    const temaGuardado = localStorage.getItem('theme');
+    if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SiCECOBAEJ TBC #65</title>
+    <link rel="stylesheet" href="./styles/login.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+
+    <main>
+
+        <button class="theme-selector" id="cambiador-tema">
+            <i class="ri-sun-fill"></i>
+        </button>
+
+        <div class="row-btn">
+            <button class="switch-btn seleccionado" id="docente-mode">Docente</button>
+            <button class="switch-btn" id="alumno-mode">Alumno</button>
+        </div>
+
+        <h1>SiCECOBAEJ TBC #65</h1>
+        <h2>Sistema de Control Escolar del COBAEJ TBC #65</h2>
+        <img src="./public/COBAEJ-logo-deep.png" alt="COBAEJ Logotipo Oscuro">
+
+        <div class="" id="login-div">
+            <form action="submit" id="form-login">
+
+                <h2>Iniciar Sesión</h2>
+                <label for="correo">Ingresa tu correo</label>
+                <input name="correo" type="email" placeholder="example@mail.com" required>
+                <label for="clave">Ingresa tu contraseña</label>
+                <input name="clave" type="password" placeholder="contraseña-segura-123" required>
+
+                <button class="form-activation" type="submit" id="login-submit">Ingresar</button>
+
+                <p>¿No tienes cuenta? <a href="#" id="login-ref">Registrate</a></p>
+
+            </form>
+        </div>
+
+        <div class="hidden" id="sign-div">
+            <form action="submit" id="form-registro">
+
+                <h2>Registrate</h2>
+                <label for="nombre">Ingresa tu nombre</label>
+                <input name="nombre" type="text" placeholder="Nombre Apellido Apellido" required>
+                <label for="correo">Ingresa tu correo</label>
+                <input name="correo" type="email" placeholder="example@mail.com" required>
+
+                <div class="row-input">
+                    <div class="pair">
+                        <label for="clave">Ingresa tu contraseña</label>
+                        <input name="clave" type="password" placeholder="contraseña-segura-123">
+                    </div>
+
+                    <div class="pair">
+                        <label for="claveConfirmar">Confirma tu contraseña</label>
+                        <input name="claveConfirmar" type="password" placeholder="misma-contraseña-segura">
+                    </div>
+                </div>
+
+                <button type="submit" class="form-activation" id="registro-submit">Registrarse</button>
+
+                <p>¿Ya tienes cuenta? <a href="#" id="sign-ref">Inicia Sesión</a></p>
+
+            </form>
+        </div>
+    </main>
+
+    <script src="./scripts/login.js"></script>
+</body>
+
+</html>

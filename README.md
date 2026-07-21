@@ -49,11 +49,6 @@ Descripcion: Software de control escolar, administrativo y aspectos generales de
 
 ***COMANDOS NECESARIOS A FUTURO***
 - pnpm install *El equivalente a npm i / npm install*
-- pnpm add -D electron@34.0.0 *Para la instalacion de la version especifica de electron*
-- pnpm add better-sqlite3
-- pnpm add @electron/rebuild
-- pnpm approve-builds *Para la ejecucion de scripts post-instalacio de librerias*
-- pnpm dlx @electron/rebuild *Runnear la primer rebuild y que el entorno de electron y sqlite se ejecuten de manera eficiente*
 - pnpm install remixicon --save *Solo es para instalar el paquete de iconos y logotipos usados en el sistema*
 
 ================================================================================================================

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<script>
+    const temaGuardado = localStorage.getItem('theme');
+    if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiCECOBAEJ 65 - Verificacion</title>
+    <link rel="stylesheet" href="../styles/verification.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+
+    <main>
+
+        <button class="theme-selector" id="cambiador-tema">
+            <i class="ri-sun-fill"></i>
+        </button>
+
+        <h1>SiCECOBAEJ TBC #65</h1>
+        <h2>Sistema de Control Escolar del COBAEJ TBC #65</h2>
+        <img src="../public/COBAEJ-logo-deep.png" alt="COBAEJ Logotipo Oscuro">
+        <h1>VERIFICACIÓN</h1>
+        <h2>Ingresa tu código</h2>
+        <h2>¡Revisa tu apartado de SPAM!</h2>
+        <p>Es posible que Gmail clasifique los correos de verificación por parte de SiCECOBAEJ como SPAM</p>
+
+        <form action="submit" id="form-verificacion">
+            <div class="row-input">
+                <input class="code-number" type="number" id="numero-1" required maxlength="1">
+                <input class="code-number" type="number" id="numero-2" required maxlength="1">
+                <input class="code-number" type="number" id="numero-3" required maxlength="1">
+                <input class="code-number" type="number" id="numero-4" required maxlength="1">
+                <input class="code-number" type="number" id="numero-5" required maxlength="1">
+                <input class="code-number" type="number" id="numero-6" required maxlength="1">
+            </div>
+
+            <p>¿No recibiste el código? <a href="#">Reenviar</a></p>
+            <p class="counter hidden" id="contador">00:00</p>
+
+            <button type="submit" class="form-activation" id="verificacion-btn">Verificar</button>
+        </form>
+
+    </main>
+
+    <div class="exit-verify hidden" id="verificacion-exito">
+        <h1 class="verify-h1">VERIFICADO CON ÉXITO</h1>
+        <h2 class="verify-h2">Bienvenido al Sistema de Control Escolar del COBAEJ TBC #65</h2>
+        <i class="ri-check-double-line success"></i>
+    </div>
+
+    <script src="../scripts/verification.js"></script>
+</body>
+
+</html>
