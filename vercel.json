@@ -2,6 +2,14 @@
     "cleanUrls": true,
     "rewrites": [
         {
+            "source": "/index",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/login",
+            "destination": "/login.html"
+        },
+        {
             "source": "/dashboard",
             "destination": "/interfaces/dashboard.html"
         },

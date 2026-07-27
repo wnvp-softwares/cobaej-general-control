@@ -10,12 +10,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SiCECOBAEJ 65 - Dashboard</title>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
 
 <body>
+    <header>
+        <button class="cabecera perfil">
+            Perfil <i class="ri-user-fill"></i>
+        </button>
+        <button class="cabecera docentes">
+            Docentes <i class="ri-id-card-line"></i>
+        </button>
+        <button class="cabecera materias">
+            Materias <i class="ri-book-marked-fill"></i>
+        </button>
+        <button class="cabecera alumnos">
+            Alumnos <i class="ri-shield-user-line"></i>
+        </button>
+        <button class="cabecera horarios">
+            Horarios <i class="ri-calendar-line"></i>
+        </button>
+        <button class="cabecera ajustes">
+            Ajustes <i class="ri-settings-line"></i>
+        </button>
+    </header>
 
     <main>
-        <h1>Bienvenido a SiCECOBAEJ TBC #65</h1>
+        <h2>Hola ${User}!</h2>
+        <img src="../public/user-default-icon.png" alt="user-pic">
+        <p class="editar imagen">Editar <i class="ri-edit-line"></i></p>
+        <label for="nombre">Nombre de usuario</label>
+        <div class="row pair">
+            <input name="nombre" type="text" disabled placeholder="Nombre de usuario">
+            <p class="editar imagen">Editar <i class="ri-edit-line"></i></p>
+        </div>
+        <label for="correo">Correo de usuario</label>
+        <div class="row pait">
+            <input name="correo" type="email" disabled placeholder="correo-example@email.com">
+            <p class="editar correo">Ir a... <i class="ri-share-box-fill"></i></p>
+        </div>
+        <fieldset class="disponibilidad">
+            <label for="horas_disponibles">Horas disponibles</label>
+            <div class="row pair">
+                <input class="horas_disponibles inp" name="horas_disponibles" type="number" disabled min="0" value="19">
+                <p class="editar imagen">Editar <i class="ri-edit-line"></i></p>
+            </div>
+        </fieldset>
+        <fieldset class="rol docente">
+            <label for="rol">Rol actual</label>
+            <input name="rol" type="text" disabled placeholder="Rol del perfil" value="Docente">
+        </fieldset>
+        <fieldset class="rol alumno hidden" disabled>
+            <label for="rol">Rol actual</label>
+            <input name="rol" type="text" disabled placeholder="Rol del perfil" value="Alumno">
+        </fieldset>
     </main>
 
 </body>

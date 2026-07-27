@@ -143,6 +143,16 @@ formLogin.addEventListener('submit', async (e) => {
 
         const resultado = await response.json();
 
+        if (response.status === 403 && resultado.verificationRequired) {
+            alert(resultado.mensaje);
+
+            localStorage.setItem('correo', datos.correo);
+            localStorage.setItem('tipo', ARQUETIPO);
+
+            window.location.href = '../interfaces/verification.html';
+            return;
+        }
+
         if (!response.ok) {
             throw new Error(resultado.mensaje || `Error en el servidor\nAPI /auth/login-${ARQUETIPO}`);
         }

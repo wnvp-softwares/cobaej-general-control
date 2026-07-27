@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* -------------------------------------------------------------
+DEFINICION DE VARIABLES Y TEMAS
+------------------------------------------------------------- */
+:root {
+    --fondo-color: #F8FAFC;
+    /* Gris ultra claro, limpio y moderno */
+    --texto-color: #334155;
+    /* Gris pizarra oscuro (más suave que el negro puro) */
+    --items-color: #4F46E5;
+    /* Azul Índigo vibrante para botones y acentos */
+    --ref-color: #6366F1;
+    /* Índigo ligeramente más claro para enlaces */
+    --filtro: 0;
+}
+
+[theme="dark"] {
+    --fondo-color: #0F172A;
+    /* Azul marino profundo (el estándar de modo oscuro moderno) */
+    --texto-color: #E2E8F0;
+    /* Gris claro para una lectura cómoda sin deslumbrar */
+    --items-color: #818CF8;
+    /* Índigo pastel/brillante con buen contraste en fondo oscuro */
+    --ref-color: #A5B4FC;
+    /* Tono más claro para enlaces legibles */
+    --filtro: 1;
+}
+
+/* -------------------------------------------------------------
+DEFINICION DE CONTENEDORES PRINCIPALES
+------------------------------------------------------------- */
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100vw;
+    height: 100vh;
+
+    margin: 0;
+
+    background-color: var(--fondo-color);
+    color: var(--texto-color);
+
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+
+    transition: background-color 0.4s, color 0.4s;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+
+    margin: 0;
+
+    align-items: center;
+    justify-content: center;
+}
+
+header {
+    display: flex;
+    flex-direction: row;
+    position: fixed;
+    top: 10px;
+    height: 50px;
+    width: 90%;
+    gap: 10px;
+}
+
+img {
+    height: 300px;
+    width: 300px;
+}
+
+input {
+    height: 40px;
+    width: 300px;
+    text-align: center;
+    background-color: var(--fondo-color);
+    border: none;
+    border-bottom: solid;
+    border-width: 1px;
+    border-color: var(--ref-color);
+    font-size: 18px;
+    color: var(--texto-color);
+}
+
+label {
+    margin-top: 20px;
+}
+
+fieldset {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* -------------------------------------------------------------
+DEFINICION DE ESTILOS EN ORDEN CASCADA CONFORME AL HTML
+------------------------------------------------------------- */
+
+/* -------------------------------------------------------------
+PARTE SUPERIOR
+------------------------------------------------------------- */
+
+.cabecera {
+    flex: 1;
+    background-color: var(--fondo-color);
+    color: var(--texto-color);
+    border: none;
+    border-bottom: solid;
+    border-color: var(--ref-color);
+    border-width: 1px;
+    cursor: pointer;
+    vertical-align: middle;
+
+    transition: font-size 0.5s ease;
+}
+
+.cabecera:hover {
+    font-size: 18px;
+}
+
+.editar {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    vertical-align: middle;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.horas_disponibles {
+    width: 100px;
+}
+
+/* -------------------------------------------------------------
+DIVS INTERNOS
+------------------------------------------------------------- */
+
+.hidden {
+    display: none !important;
+}
