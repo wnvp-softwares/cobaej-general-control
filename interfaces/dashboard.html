@@ -1,72 +1,149 @@
 <!DOCTYPE html>
 <html lang="es">
 
-<script>
-    const temaGuardado = localStorage.getItem('theme');
-    if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
-</script>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SiCECOBAEJ 65 - Dashboard</title>
+    <script>
+        const temaGuardado = localStorage.getItem('theme');
+        if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
+    </script>
+    <title>SiCECOBAEJ 65 - Mi perfil</title>
     <link rel="stylesheet" href="../styles/dashboard.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 
 <body>
-    <header>
-        <button class="cabecera perfil">
-            Perfil <i class="ri-user-fill"></i>
-        </button>
-        <button class="cabecera docentes">
-            Docentes <i class="ri-id-card-line"></i>
-        </button>
-        <button class="cabecera materias">
-            Materias <i class="ri-book-marked-fill"></i>
-        </button>
-        <button class="cabecera alumnos">
-            Alumnos <i class="ri-shield-user-line"></i>
-        </button>
-        <button class="cabecera horarios">
-            Horarios <i class="ri-calendar-line"></i>
-        </button>
-        <button class="cabecera ajustes">
-            Ajustes <i class="ri-settings-line"></i>
-        </button>
+    <header class="app-header">
+        <a class="brand" href="./dashboard.html" aria-label="Ir a mi perfil">
+            <img src="../public/COBAEJ-logo-icon.jpg" alt="">
+            <span>SiCECOBAEJ 65</span>
+        </a>
+
+        <nav class="main-navigation" aria-label="Navegación principal">
+            <button class="navigation-button active" type="button">
+                <i class="ri-user-3-line"></i>
+                <span>Perfil</span>
+            </button>
+            <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
+                <i class="ri-id-card-line"></i>
+                <span>Docentes</span>
+            </button>
+            <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
+                <i class="ri-book-marked-line"></i>
+                <span>Materias</span>
+            </button>
+            <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
+                <i class="ri-graduation-cap-line"></i>
+                <span>Alumnos</span>
+            </button>
+            <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
+                <i class="ri-calendar-line"></i>
+                <span>Horarios</span>
+            </button>
+        </nav>
+
+        <div class="header-actions">
+            <button class="icon-button" id="cambiador-tema" type="button" aria-label="Cambiar tema">
+                <i class="ri-moon-line"></i>
+            </button>
+            <button class="icon-button logout" id="cerrar-sesion" type="button" aria-label="Cerrar sesión">
+                <i class="ri-logout-box-r-line"></i>
+            </button>
+        </div>
     </header>
 
-    <main>
-        <h2>Hola ${User}!</h2>
-        <img src="../public/user-default-icon.png" alt="user-pic">
-        <p class="editar imagen">Editar <i class="ri-edit-line"></i></p>
-        <label for="nombre">Nombre de usuario</label>
-        <div class="row pair">
-            <input name="nombre" type="text" disabled placeholder="Nombre de usuario">
-            <p class="editar imagen">Editar <i class="ri-edit-line"></i></p>
-        </div>
-        <label for="correo">Correo de usuario</label>
-        <div class="row pait">
-            <input name="correo" type="email" disabled placeholder="correo-example@email.com">
-            <p class="editar correo">Ir a... <i class="ri-share-box-fill"></i></p>
-        </div>
-        <fieldset class="disponibilidad">
-            <label for="horas_disponibles">Horas disponibles</label>
-            <div class="row pair">
-                <input class="horas_disponibles inp" name="horas_disponibles" type="number" disabled min="0" value="19">
-                <p class="editar imagen">Editar <i class="ri-edit-line"></i></p>
+    <main class="dashboard-main">
+        <section class="profile-card" aria-labelledby="profile-title">
+            <div class="profile-heading">
+                <div>
+                    <p class="eyebrow">Cuenta personal</p>
+                    <h1 id="profile-title">Mi perfil</h1>
+                    <p id="saludo-usuario">Cargando información...</p>
+                </div>
+
+                <button class="secondary-button" id="editar-perfil" type="button" disabled>
+                    <i class="ri-edit-line"></i>
+                    Editar perfil
+                </button>
             </div>
-        </fieldset>
-        <fieldset class="rol docente">
-            <label for="rol">Rol actual</label>
-            <input name="rol" type="text" disabled placeholder="Rol del perfil" value="Docente">
-        </fieldset>
-        <fieldset class="rol alumno hidden" disabled>
-            <label for="rol">Rol actual</label>
-            <input name="rol" type="text" disabled placeholder="Rol del perfil" value="Alumno">
-        </fieldset>
+
+            <div class="profile-message hidden" id="mensaje-perfil" role="status" aria-live="polite"></div>
+
+            <form id="form-perfil">
+                <div class="profile-content">
+                    <div class="avatar-column">
+                        <div class="avatar-frame">
+                            <img id="imagen-perfil" src="../public/user-default-icon.png" alt="Imagen del perfil">
+                        </div>
+
+                        <label class="photo-button hidden" id="selector-imagen" for="imagen-input">
+                            <i class="ri-camera-line"></i>
+                            Cambiar imagen
+                        </label>
+                        <input id="imagen-input" name="imagen" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+                        <small>JPG, PNG o WEBP. Máximo 5 MB.</small>
+                    </div>
+
+                    <div class="profile-fields">
+                        <div class="field-group">
+                            <label for="nombre">Nombre completo</label>
+                            <div class="input-wrapper">
+                                <i class="ri-user-line"></i>
+                                <input id="nombre" name="nombre" type="text" maxlength="150" disabled required>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="correo">Correo</label>
+                            <div class="input-wrapper readonly">
+                                <i class="ri-mail-line"></i>
+                                <input id="correo" type="email" disabled>
+                                <i class="ri-lock-line lock-icon" title="Se modificará desde Configuración"></i>
+                            </div>
+                            <small>Este dato se administrará desde Configuración.</small>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="rol">Tipo de cuenta</label>
+                            <div class="input-wrapper readonly">
+                                <i class="ri-shield-user-line"></i>
+                                <input id="rol" type="text" disabled>
+                            </div>
+                        </div>
+
+                        <div class="field-group hidden" id="campo-horas">
+                            <label for="horas-disponibles">Horas disponibles</label>
+                            <div class="input-wrapper">
+                                <i class="ri-time-line"></i>
+                                <input id="horas-disponibles" name="horas_disponibles" type="number" min="0" step="1" disabled>
+                            </div>
+                        </div>
+
+                        <div class="field-group hidden" id="campo-fecha-ingreso">
+                            <label for="fecha-ingreso">Fecha de ingreso</label>
+                            <div class="input-wrapper readonly">
+                                <i class="ri-calendar-check-line"></i>
+                                <input id="fecha-ingreso" type="text" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions hidden" id="acciones-edicion">
+                    <button class="secondary-button" id="cancelar-edicion" type="button">
+                        Cancelar
+                    </button>
+                    <button class="primary-button" id="guardar-perfil" type="submit">
+                        <i class="ri-save-line"></i>
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </section>
     </main>
 
+    <script src="../scripts/dashboard.js"></script>
 </body>
 
 </html>

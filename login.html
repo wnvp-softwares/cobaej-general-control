@@ -1,48 +1,50 @@
 <!DOCTYPE html>
 <html lang="es">
 
-<script>
-    const temaGuardado = localStorage.getItem('theme');
-    if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
-</script>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const temaGuardado = localStorage.getItem('theme');
+        if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
+    </script>
     <title>Login - SiCECOBAEJ TBC #65</title>
     <link rel="stylesheet" href="./styles/login.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 
 <body>
 
     <main>
 
-        <button class="theme-selector" id="cambiador-tema">
+        <button class="theme-selector" id="cambiador-tema" type="button" aria-label="Cambiar tema">
             <i class="ri-sun-fill"></i>
         </button>
 
         <div class="row-btn">
-            <button class="switch-btn seleccionado" id="docente-mode">Docente</button>
-            <button class="switch-btn" id="alumno-mode">Alumno</button>
+            <button class="switch-btn seleccionado" id="docente-mode" type="button">Docente</button>
+            <button class="switch-btn" id="alumno-mode" type="button">Alumno</button>
         </div>
 
         <h1>SiCECOBAEJ TBC #65</h1>
         <h2>Sistema de Control Escolar del COBAEJ TBC #65</h2>
         <img src="./public/COBAEJ-logo-deep.png" alt="COBAEJ Logotipo Oscuro">
 
+        <div class="form-message hidden" id="mensaje-general" role="status" aria-live="polite"></div>
+
         <div class="" id="login-div">
             <form action="submit" id="form-login">
 
                 <h2>Iniciar Sesión</h2>
-                <label for="correo">Ingresa tu correo</label>
-                <input name="correo" type="email" placeholder="example@mail.com" required>
+                <label for="login-correo">Ingresa tu correo</label>
+                <input id="login-correo" name="correo" type="email" placeholder="example@mail.com" autocomplete="email" required>
                 <fieldset id="arquetipoLogin-alumno" class="hidden" disabled>
-                    <label for="numero_control">Ingresa tu numero de control</label>
-                    <input name="numero_control" type="text" placeholder="Numero-Control-000" required>
+                    <legend class="sr-only">Datos adicionales para alumnos</legend>
+                    <label for="login-numero-control">Ingresa tu numero de control</label>
+                    <input id="login-numero-control" name="numero_control" type="text" placeholder="Numero-Control-000" autocomplete="username" required>
                 </fieldset>
-                <label for="clave">Ingresa tu contraseña</label>
-                <input name="clave" type="password" placeholder="contraseña-segura-123" required>
+                <label for="login-clave">Ingresa tu contraseña</label>
+                <input id="login-clave" name="clave" type="password" placeholder="contraseña-segura-123" autocomplete="current-password" required>
 
                 <button class="form-activation" type="submit" id="login-submit">Ingresar</button>
 
@@ -55,37 +57,39 @@
             <form action="submit" id="form-registro">
 
                 <h2>Registrate</h2>
-                <label for="nombre">Ingresa tu nombre</label>
-                <input name="nombre" type="text" placeholder="Nombre Apellido Apellido" required>
+                <label for="registro-nombre">Ingresa tu nombre</label>
+                <input id="registro-nombre" name="nombre" type="text" placeholder="Nombre Apellido Apellido" autocomplete="name" required>
 
                 <div class="row-input">
                     <div class="pair">
-                        <label for="correo">Ingresa tu correo</label>
-                        <input name="correo" type="email" placeholder="example@mail.com" required>
+                        <label for="registro-correo">Ingresa tu correo</label>
+                        <input id="registro-correo" name="correo" type="email" placeholder="example@mail.com" autocomplete="email" required>
                     </div>
 
                     <div class="pair">
                         <fieldset id="arquetipo-docente" class="hidden" disabled>
-                            <label for="clave_registro">Ingresa la clave de registro</label>
-                            <input name="clave_registro" type="text" placeholder="Clave-Registro-XYZ" required>
+                            <legend class="sr-only">Datos de registro para docentes</legend>
+                            <label for="registro-clave-docente">Ingresa la clave de registro</label>
+                            <input id="registro-clave-docente" name="clave_registro" type="text" placeholder="Clave-Registro-XYZ" required>
                         </fieldset>
 
                         <fieldset id="arquetipo-alumno" class="hidden" disabled>
-                            <label for="numero_control">Ingresa el número de control</label>
-                            <input name="numero_control" type="text" placeholder="Numero-Control-000" required>
+                            <legend class="sr-only">Datos de registro para alumnos</legend>
+                            <label for="registro-numero-control">Ingresa el número de control</label>
+                            <input id="registro-numero-control" name="numero_control" type="text" placeholder="Numero-Control-000" autocomplete="username" required>
                         </fieldset>
                     </div>
                 </div>
 
                 <div class="row-input">
                     <div class="pair">
-                        <label for="clave">Ingresa tu contraseña</label>
-                        <input name="clave" type="password" placeholder="contraseña-segura-123">
+                        <label for="registro-clave">Ingresa tu contraseña</label>
+                        <input id="registro-clave" name="clave" type="password" placeholder="contraseña-segura-123" autocomplete="new-password" required>
                     </div>
 
                     <div class="pair">
-                        <label for="claveConfirmar">Confirma tu contraseña</label>
-                        <input name="claveConfirmar" type="password" placeholder="misma-contraseña-segura">
+                        <label for="registro-clave-confirmar">Confirma tu contraseña</label>
+                        <input id="registro-clave-confirmar" name="claveConfirmar" type="password" placeholder="misma-contraseña-segura" autocomplete="new-password" required>
                     </div>
                 </div>
 

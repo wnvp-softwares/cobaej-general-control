@@ -3,152 +3,491 @@
 /* -------------------------------------------------------------
 DEFINICION DE VARIABLES Y TEMAS
 ------------------------------------------------------------- */
+
 :root {
-    --fondo-color: #F8FAFC;
-    /* Gris ultra claro, limpio y moderno */
-    --texto-color: #334155;
-    /* Gris pizarra oscuro (más suave que el negro puro) */
+    --fondo-color: #F1F5F9;
+    --superficie-color: #FFFFFF;
+    --superficie-secundaria: #F8FAFC;
+    --texto-color: #1E293B;
+    --texto-secundario: #64748B;
     --items-color: #4F46E5;
-    /* Azul Índigo vibrante para botones y acentos */
+    --items-hover: #4338CA;
     --ref-color: #6366F1;
-    /* Índigo ligeramente más claro para enlaces */
-    --filtro: 0;
+    --borde-color: #E2E8F0;
+    --error-color: #DC2626;
+    --success-color: #15803D;
+    --sombra: 0 18px 50px rgba(15, 23, 42, 0.08);
 }
 
 [theme="dark"] {
     --fondo-color: #0F172A;
-    /* Azul marino profundo (el estándar de modo oscuro moderno) */
+    --superficie-color: #172033;
+    --superficie-secundaria: #111827;
     --texto-color: #E2E8F0;
-    /* Gris claro para una lectura cómoda sin deslumbrar */
+    --texto-secundario: #94A3B8;
     --items-color: #818CF8;
-    /* Índigo pastel/brillante con buen contraste en fondo oscuro */
+    --items-hover: #A5B4FC;
     --ref-color: #A5B4FC;
-    /* Tono más claro para enlaces legibles */
-    --filtro: 1;
+    --borde-color: #334155;
+    --error-color: #F87171;
+    --success-color: #4ADE80;
+    --sombra: 0 18px 50px rgba(0, 0, 0, 0.28);
 }
 
 /* -------------------------------------------------------------
 DEFINICION DE CONTENEDORES PRINCIPALES
 ------------------------------------------------------------- */
+
+* {
+    box-sizing: border-box;
+}
+
 body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 100vw;
-    height: 100vh;
-
+    min-width: 320px;
+    min-height: 100vh;
     margin: 0;
-
-    background-color: var(--fondo-color);
+    background: var(--fondo-color);
     color: var(--texto-color);
-
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-
-
-    transition: background-color 0.4s, color 0.4s;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-main {
-    display: flex;
-    flex-direction: column;
-
-    margin: 0;
-
-    align-items: center;
-    justify-content: center;
-}
-
-header {
-    display: flex;
-    flex-direction: row;
-    position: fixed;
-    top: 10px;
-    height: 50px;
-    width: 90%;
-    gap: 10px;
-}
-
-img {
-    height: 300px;
-    width: 300px;
-}
-
+button,
 input {
-    height: 40px;
-    width: 300px;
-    text-align: center;
-    background-color: var(--fondo-color);
-    border: none;
-    border-bottom: solid;
-    border-width: 1px;
-    border-color: var(--ref-color);
-    font-size: 18px;
+    font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+label:focus-visible,
+a:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--items-color) 45%, transparent);
+    outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------
+CABECERA Y NAVEGACION
+------------------------------------------------------------- */
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+    min-height: 72px;
+    padding: 10px clamp(16px, 4vw, 48px);
+    border-bottom: 1px solid var(--borde-color);
+    background: color-mix(in srgb, var(--superficie-color) 92%, transparent);
+    backdrop-filter: blur(14px);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     color: var(--texto-color);
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
-label {
-    margin-top: 20px;
+.brand img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
-fieldset {
+.main-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.navigation-button,
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: none;
+    background: transparent;
+    color: var(--texto-secundario);
+    cursor: pointer;
+}
+
+.navigation-button {
+    gap: 7px;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.navigation-button.active {
+    background: color-mix(in srgb, var(--items-color) 12%, transparent);
+    color: var(--items-color);
+}
+
+.navigation-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.header-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.icon-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 21px;
+}
+
+.icon-button:hover {
+    background: var(--superficie-secundaria);
+    color: var(--items-color);
+}
+
+.icon-button.logout:hover {
+    color: var(--error-color);
+}
+
+/* -------------------------------------------------------------
+TARJETA PRINCIPAL DEL PERFIL
+------------------------------------------------------------- */
+
+.dashboard-main {
+    width: min(1080px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 64px) 0;
+}
+
+.profile-card {
+    padding: clamp(22px, 4vw, 42px);
+    border: 1px solid var(--borde-color);
+    border-radius: 24px;
+    background: var(--superficie-color);
+    box-shadow: var(--sombra);
+}
+
+.profile-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 26px;
+    border-bottom: 1px solid var(--borde-color);
+}
+
+.eyebrow {
+    margin: 0 0 6px;
+    color: var(--items-color);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 40px);
+    letter-spacing: -0.04em;
+}
+
+.profile-heading p:last-child {
+    margin: 8px 0 0;
+    color: var(--texto-secundario);
+}
+
+.profile-content {
+    display: grid;
+    grid-template-columns: minmax(210px, 280px) minmax(0, 1fr);
+    gap: clamp(32px, 6vw, 70px);
+    padding-top: 34px;
+}
+
+/* -------------------------------------------------------------
+IMAGEN DEL PERFIL
+------------------------------------------------------------- */
+
+.avatar-column {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
 }
 
-/* -------------------------------------------------------------
-DEFINICION DE ESTILOS EN ORDEN CASCADA CONFORME AL HTML
-------------------------------------------------------------- */
+.avatar-frame {
+    width: min(220px, 65vw);
+    aspect-ratio: 1;
+    padding: 6px;
+    border: 1px solid var(--borde-color);
+    border-radius: 50%;
+    background: var(--superficie-secundaria);
+}
 
-/* -------------------------------------------------------------
-PARTE SUPERIOR
-------------------------------------------------------------- */
+.avatar-frame img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
 
-.cabecera {
-    flex: 1;
-    background-color: var(--fondo-color);
-    color: var(--texto-color);
-    border: none;
-    border-bottom: solid;
-    border-color: var(--ref-color);
-    border-width: 1px;
+.photo-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 10px 16px;
+    border: 1px solid var(--borde-color);
+    border-radius: 12px;
+    color: var(--items-color);
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    vertical-align: middle;
-
-    transition: font-size 0.5s ease;
 }
 
-.cabecera:hover {
+.photo-button:hover {
+    border-color: var(--items-color);
+    background: color-mix(in srgb, var(--items-color) 8%, transparent);
+}
+
+.avatar-column small {
+    margin-top: 10px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* -------------------------------------------------------------
+CAMPOS DEL PERFIL
+------------------------------------------------------------- */
+
+.profile-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.field-group {
+    min-width: 0;
+}
+
+.field-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.field-group small {
+    display: block;
+    margin-top: 7px;
+    color: var(--texto-secundario);
+    font-size: 11px;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--borde-color);
+    border-radius: 13px;
+    background: var(--superficie-color);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--items-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--items-color) 15%, transparent);
+}
+
+.input-wrapper.readonly {
+    background: var(--superficie-secundaria);
+}
+
+.input-wrapper > i {
+    flex: 0 0 auto;
+    color: var(--items-color);
     font-size: 18px;
 }
 
-.editar {
-    text-decoration: underline;
-    cursor: pointer;
+.input-wrapper .lock-icon {
+    color: var(--texto-secundario);
+    font-size: 15px;
 }
 
-.row {
-    display: flex;
-    flex-direction: row;
-    vertical-align: middle;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
+.input-wrapper input {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--texto-color);
 }
 
-.horas_disponibles {
-    width: 100px;
+.input-wrapper input:disabled {
+    opacity: 1;
+    -webkit-text-fill-color: var(--texto-color);
 }
 
 /* -------------------------------------------------------------
-DIVS INTERNOS
+BOTONES Y MENSAJES
 ------------------------------------------------------------- */
+
+.primary-button,
+.secondary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 17px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primary-button {
+    border: 1px solid var(--items-color);
+    background: var(--items-color);
+    color: #FFFFFF;
+}
+
+.primary-button:hover {
+    background: var(--items-hover);
+}
+
+.secondary-button {
+    border: 1px solid var(--borde-color);
+    background: var(--superficie-color);
+    color: var(--texto-color);
+}
+
+.secondary-button:hover {
+    border-color: var(--items-color);
+    color: var(--items-color);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 34px;
+    padding-top: 24px;
+    border-top: 1px solid var(--borde-color);
+}
+
+.profile-message {
+    margin-top: 22px;
+    padding: 12px 16px;
+    border: 1px solid var(--ref-color);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--items-color) 8%, transparent);
+    line-height: 1.5;
+}
+
+.profile-message.error {
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+.profile-message.success {
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
 
 .hidden {
     display: none !important;
+}
+
+/* -------------------------------------------------------------
+DISEÑO RESPONSIVO
+------------------------------------------------------------- */
+
+@media screen and (max-width: 900px) {
+    .app-header {
+        grid-template-columns: 1fr auto;
+    }
+
+    .main-navigation {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .profile-content {
+        grid-template-columns: 1fr;
+    }
+
+    .avatar-column {
+        padding-bottom: 8px;
+    }
+}
+
+@media screen and (max-width: 620px) {
+    .app-header {
+        gap: 10px;
+        padding: 10px 14px;
+    }
+
+    .brand span {
+        display: none;
+    }
+
+    .navigation-button {
+        padding: 0 11px;
+    }
+
+    .navigation-button span {
+        display: none;
+    }
+
+    .dashboard-main {
+        width: min(100% - 20px, 1080px);
+        padding: 18px 0 28px;
+    }
+
+    .profile-card {
+        padding: 20px 16px;
+        border-radius: 18px;
+    }
+
+    .profile-heading {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-heading .secondary-button {
+        width: 100%;
+    }
+
+    .profile-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
 }

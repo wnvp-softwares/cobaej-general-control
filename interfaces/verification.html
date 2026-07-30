@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 
-<script>
-    const temaGuardado = localStorage.getItem('theme');
-    if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
-</script>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const temaGuardado = localStorage.getItem('theme');
+        if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
+    </script>
     <title>SiCECOBAEJ 65 - Verificacion</title>
     <link rel="stylesheet" href="../styles/verification.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 
 <body>
 
     <main>
 
-        <button class="theme-selector" id="cambiador-tema">
+        <button class="theme-selector" id="cambiador-tema" type="button" aria-label="Cambiar tema">
             <i class="ri-sun-fill"></i>
         </button>
 
@@ -27,21 +26,26 @@
         <img src="../public/COBAEJ-logo-deep.png" alt="COBAEJ Logotipo Oscuro">
         <h1>VERIFICACIÓN</h1>
         <h2>Ingresa tu código</h2>
+        <p class="verification-destination" id="destino-verificacion"></p>
         <h2>¡Revisa tu apartado de SPAM!</h2>
         <p>Es posible que Gmail clasifique los correos de verificación por parte de SiCECOBAEJ como SPAM</p>
+        <div class="verification-message hidden" id="mensaje-verificacion" role="status" aria-live="polite"></div>
 
         <form action="submit" id="form-verificacion">
             <div class="row-input">
-                <input class="code-number" type="number" id="numero-1" required maxlength="1">
-                <input class="code-number" type="number" id="numero-2" required maxlength="1">
-                <input class="code-number" type="number" id="numero-3" required maxlength="1">
-                <input class="code-number" type="number" id="numero-4" required maxlength="1">
-                <input class="code-number" type="number" id="numero-5" required maxlength="1">
-                <input class="code-number" type="number" id="numero-6" required maxlength="1">
+                <input class="code-number" type="text" inputmode="numeric" autocomplete="one-time-code" aria-label="Dígito 1" required maxlength="1">
+                <input class="code-number" type="text" inputmode="numeric" aria-label="Dígito 2" required maxlength="1">
+                <input class="code-number" type="text" inputmode="numeric" aria-label="Dígito 3" required maxlength="1">
+                <input class="code-number" type="text" inputmode="numeric" aria-label="Dígito 4" required maxlength="1">
+                <input class="code-number" type="text" inputmode="numeric" aria-label="Dígito 5" required maxlength="1">
+                <input class="code-number" type="text" inputmode="numeric" aria-label="Dígito 6" required maxlength="1">
             </div>
 
-            <p>¿No recibiste el código? <a href="#">Reenviar</a></p>
-            <p class="counter hidden" id="contador">00:00</p>
+            <div class="resend-row">
+                <span>¿No recibiste el código?</span>
+                <button class="resend-button" id="reenviar-codigo" type="button">Reenviar</button>
+            </div>
+            <p class="counter hidden" id="contador">Disponible en 05:00</p>
 
             <button type="submit" class="form-activation" id="verificacion-btn">Verificar</button>
         </form>

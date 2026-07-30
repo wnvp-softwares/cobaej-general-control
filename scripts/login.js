@@ -1,83 +1,76 @@
 /* -------------------------------------------------------------
 DEFINICION DE VARIABLES DEL DOM
 ------------------------------------------------------------- */
+
 const switchDocente = document.getElementById('docente-mode');
 const switchAlumno = document.getElementById('alumno-mode');
-
 const themeBtn = document.getElementById('cambiador-tema');
-
 const loginContenedor = document.getElementById('login-div');
 const signContenedor = document.getElementById('sign-div');
 const loginRef = document.getElementById('login-ref');
 const signRef = document.getElementById('sign-ref');
-
 const formLogin = document.getElementById('form-login');
 const btnLogin = document.getElementById('login-submit');
-
 const formRegistro = document.getElementById('form-registro');
 const btnRegistro = document.getElementById('registro-submit');
-
+const mensajeGeneral = document.getElementById('mensaje-general');
 
 /* -------------------------------------------------------------
-VARIABLE GLOBAL
+VARIABLES GLOBALES
 ------------------------------------------------------------- */
 
-const URL_BASE = 'https://cobaej-general-server.onrender.com/sicecobaej'
+const URL_BASE = 'https://cobaej-general-server.onrender.com/sicecobaej';
 let ARQUETIPO = 'docente';
 
 /* -------------------------------------------------------------
-FUNCIONES GENERALES
+METODO PARA MOSTRAR MENSAJES ACCESIBLES EN LA INTERFAZ
 ------------------------------------------------------------- */
+
+function mostrarMensaje(mensaje, tipo = 'info') {
+    mensajeGeneral.textContent = mensaje;
+    mensajeGeneral.className = `form-message ${tipo}`;
+}
 
 /* -------------------------------------------------------------
-ALTERNAR ARQUETIPO DE PERFIL
+METODO PARA OCULTAR EL MENSAJE ACTUAL
 ------------------------------------------------------------- */
+
+function ocultarMensaje() {
+    mensajeGeneral.textContent = '';
+    mensajeGeneral.className = 'form-message hidden';
+}
+
+/* -------------------------------------------------------------
+METODO PARA LEER RESPUESTAS JSON DE LA API
+------------------------------------------------------------- */
+
+async function leerRespuesta(response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        return {
+            mensaje: 'El servidor devolvió una respuesta que no pudo interpretarse'
+        };
+    }
+}
+
+/* -------------------------------------------------------------
+METODO PARA SELECCIONAR VISUALMENTE EL TIPO DE USUARIO
+------------------------------------------------------------- */
+
 function seleccionarTipo(boton) {
     const botones = boton.parentElement.querySelectorAll('.switch-btn');
-    botones.forEach(b => b.classList.remove('seleccionado'));
-
+    botones.forEach((elemento) => elemento.classList.remove('seleccionado'));
     boton.classList.add('seleccionado');
 }
 
-switchDocente.addEventListener('click', (e) => {
-    seleccionarTipo(e.currentTarget);
-    ARQUETIPO = 'docente';
-
-    alternarModalLogin();
-    alternarModalRegistro();
-});
-
-switchAlumno.addEventListener('click', (e) => {
-    seleccionarTipo(e.currentTarget);
-    ARQUETIPO = 'alumno';
-
-    alternarModalLogin();
-    alternarModalRegistro();
-});
-
 /* -------------------------------------------------------------
-ALTERNAR ARQUETIPO DE REGISTRO
+METODO PARA CAMBIAR EL TEMA DE LA INTERFAZ
 ------------------------------------------------------------- */
-loginRef.addEventListener('click', () => {
-    loginContenedor.classList.add('hidden');
-    signContenedor.classList.remove('hidden');
 
-    alternarModalRegistro();
-});
-
-signRef.addEventListener('click', () => {
-    signContenedor.classList.add('hidden');
-    loginContenedor.classList.remove('hidden');
-
-    alternarModalLogin();
-});
-
-/* -------------------------------------------------------------
-CAMBIAR TEMA
-------------------------------------------------------------- */
 function alternarTema() {
     const htmlElement = document.documentElement;
-    const temaActual = htmlElement.getAttribute('theme')
+    const temaActual = htmlElement.getAttribute('theme');
 
     if (temaActual === 'dark') {
         htmlElement.removeAttribute('theme');
@@ -88,31 +81,18 @@ function alternarTema() {
     }
 }
 
-themeBtn.addEventListener('click', alternarTema);
-
 /* -------------------------------------------------------------
-ALTERNAR MODAL
+METODO PARA MOSTRAR LOS CAMPOS DE REGISTRO DEL TIPO ACTIVO
 ------------------------------------------------------------- */
+
 function alternarModalRegistro() {
-    document.querySelectorAll('#form-registro fieldset').forEach(fs => {
-        fs.disabled = true;
-        fs.classList.add('hidden');
+    document.querySelectorAll('#form-registro fieldset').forEach((fieldset) => {
+        fieldset.disabled = true;
+        fieldset.classList.add('hidden');
     });
 
     const fieldSetActivo = document.getElementById(`arquetipo-${ARQUETIPO}`);
-    if (fieldSetActivo) {
-        fieldSetActivo.disabled = false;
-        fieldSetActivo.classList.remove('hidden');
-    }
-}
 
-function alternarModalLogin() {
-    document.querySelectorAll('#form-login fieldset').forEach(fs => {
-        fs.disabled = true;
-        fs.classList.add('hidden');
-    });
-
-    const fieldSetActivo = document.getElementById(`arquetipoLogin-${ARQUETIPO}`);
     if (fieldSetActivo) {
         fieldSetActivo.disabled = false;
         fieldSetActivo.classList.remove('hidden');
@@ -120,17 +100,128 @@ function alternarModalLogin() {
 }
 
 /* -------------------------------------------------------------
-LANZAR FORMS
+METODO PARA MOSTRAR LOS CAMPOS DE LOGIN DEL TIPO ACTIVO
 ------------------------------------------------------------- */
-formLogin.addEventListener('submit', async (e) => {
-    e.preventDefault();
+
+function alternarModalLogin() {
+    document.querySelectorAll('#form-login fieldset').forEach((fieldset) => {
+        fieldset.disabled = true;
+        fieldset.classList.add('hidden');
+    });
+
+    const fieldSetActivo = document.getElementById(`arquetipoLogin-${ARQUETIPO}`);
+
+    if (fieldSetActivo) {
+        fieldSetActivo.disabled = false;
+        fieldSetActivo.classList.remove('hidden');
+    }
+}
+
+/* -------------------------------------------------------------
+METODO PARA GUARDAR TEMPORALMENTE EL PROCESO DE VERIFICACION
+------------------------------------------------------------- */
+
+function guardarContextoVerificacion(resultado) {
+    sessionStorage.setItem(
+        'verificationToken',
+        resultado.verificationToken
+    );
+    sessionStorage.setItem('verificationEmail', resultado.correo);
+    sessionStorage.setItem('verificationType', resultado.tipo);
+    sessionStorage.setItem(
+        'verificationRetryAfter',
+        String(resultado.retryAfter || 0)
+    );
+    sessionStorage.setItem(
+        'verificationStoredAt',
+        String(Date.now())
+    );
+}
+
+/* -------------------------------------------------------------
+METODO PARA AVISAR Y REDIRIGIR A UNA VERIFICACION PENDIENTE
+------------------------------------------------------------- */
+
+function redirigirAVerificacion(resultado) {
+    guardarContextoVerificacion(resultado);
+    mostrarMensaje(resultado.mensaje, 'warning');
+
+    window.setTimeout(() => {
+        window.location.href = './interfaces/verification.html';
+    }, 1400);
+}
+
+/* -------------------------------------------------------------
+METODO PARA GUARDAR LA SESION AUTENTICADA
+------------------------------------------------------------- */
+
+function guardarSesion(resultado) {
+    localStorage.setItem('usuario', JSON.stringify(resultado.usuario));
+    localStorage.setItem('tipo', resultado.tipo);
+    localStorage.setItem('token', resultado.token);
+}
+
+/* -------------------------------------------------------------
+METODO PARA CAMBIAR AL MODO DOCENTE
+------------------------------------------------------------- */
+
+function manejarSeleccionDocente(evento) {
+    seleccionarTipo(evento.currentTarget);
+    ARQUETIPO = 'docente';
+    ocultarMensaje();
+    alternarModalLogin();
+    alternarModalRegistro();
+}
+
+/* -------------------------------------------------------------
+METODO PARA CAMBIAR AL MODO ALUMNO
+------------------------------------------------------------- */
+
+function manejarSeleccionAlumno(evento) {
+    seleccionarTipo(evento.currentTarget);
+    ARQUETIPO = 'alumno';
+    ocultarMensaje();
+    alternarModalLogin();
+    alternarModalRegistro();
+}
+
+/* -------------------------------------------------------------
+METODO PARA MOSTRAR EL FORMULARIO DE REGISTRO
+------------------------------------------------------------- */
+
+function mostrarRegistro(evento) {
+    evento.preventDefault();
+    loginContenedor.classList.add('hidden');
+    signContenedor.classList.remove('hidden');
+    ocultarMensaje();
+    alternarModalRegistro();
+}
+
+/* -------------------------------------------------------------
+METODO PARA MOSTRAR EL FORMULARIO DE LOGIN
+------------------------------------------------------------- */
+
+function mostrarLogin(evento) {
+    evento.preventDefault();
+    signContenedor.classList.add('hidden');
+    loginContenedor.classList.remove('hidden');
+    ocultarMensaje();
+    alternarModalLogin();
+}
+
+/* -------------------------------------------------------------
+METODO PARA PROCESAR EL FORMULARIO DE LOGIN
+------------------------------------------------------------- */
+
+async function manejarLogin(evento) {
+    evento.preventDefault();
+    ocultarMensaje();
 
     btnLogin.disabled = true;
-    const originalBtnTxt = btnLogin.textContent;
-    btnLogin.textContent = 'Cargando...';
+    const textoOriginal = btnLogin.textContent;
+    btnLogin.textContent = 'Validando...';
 
-    const datosForm = new FormData(formLogin);
-    const datos = Object.fromEntries(datosForm.entries());
+    const datos = Object.fromEntries(new FormData(formLogin).entries());
 
     try {
         const response = await fetch(`${URL_BASE}/auth/login-${ARQUETIPO}`, {
@@ -140,47 +231,44 @@ formLogin.addEventListener('submit', async (e) => {
             },
             body: JSON.stringify(datos)
         });
-
-        const resultado = await response.json();
+        const resultado = await leerRespuesta(response);
 
         if (response.status === 403 && resultado.verificationRequired) {
-            alert(resultado.mensaje);
-
-            localStorage.setItem('correo', datos.correo);
-            localStorage.setItem('tipo', ARQUETIPO);
-
-            window.location.href = '../interfaces/verification.html';
+            redirigirAVerificacion(resultado);
             return;
         }
 
         if (!response.ok) {
-            throw new Error(resultado.mensaje || `Error en el servidor\nAPI /auth/login-${ARQUETIPO}`);
+            throw new Error(
+                resultado.mensaje
+                || `Error en la ruta /auth/login-${ARQUETIPO}`
+            );
         }
 
-        localStorage.setItem('usuario', JSON.stringify(resultado.usuario));
-        localStorage.setItem('tipo', resultado.tipo);
-        localStorage.setItem('token', resultado.token);
-
-        window.location.href = '../interfaces/dashboard.html';
-
+        guardarSesion(resultado);
+        window.location.href = './interfaces/dashboard.html';
     } catch (error) {
         console.error('Error en el login:\n', error.message);
-        alert(error.message);
+        mostrarMensaje(error.message, 'error');
     } finally {
-        btnLogin.textContent = originalBtnTxt;
+        btnLogin.textContent = textoOriginal;
         btnLogin.disabled = false;
     }
-});
+}
 
-formRegistro.addEventListener('submit', async (e) => {
-    e.preventDefault();
+/* -------------------------------------------------------------
+METODO PARA PROCESAR EL FORMULARIO DE REGISTRO
+------------------------------------------------------------- */
+
+async function manejarRegistro(evento) {
+    evento.preventDefault();
+    ocultarMensaje();
 
     btnRegistro.disabled = true;
-    const originalBtnTxt = btnRegistro.textContent;
-    btnRegistro.textContent = 'Cargando...';
+    const textoOriginal = btnRegistro.textContent;
+    btnRegistro.textContent = 'Creando cuenta...';
 
-    const datosForm = new FormData(formRegistro);
-    const datos = Object.fromEntries(datosForm.entries());
+    const datos = Object.fromEntries(new FormData(formRegistro).entries());
 
     try {
         const response = await fetch(`${URL_BASE}/auth/signup-${ARQUETIPO}`, {
@@ -190,31 +278,46 @@ formRegistro.addEventListener('submit', async (e) => {
             },
             body: JSON.stringify(datos)
         });
-
-        const resultado = await response.json();
+        const resultado = await leerRespuesta(response);
 
         if (!response.ok) {
-            throw new Error(resultado.mensaje || `Error en el servidor\nAPI /auth/registro-${ARQUETIPO}`);
+            throw new Error(
+                resultado.mensaje
+                || `Error en la ruta /auth/signup-${ARQUETIPO}`
+            );
         }
 
-        localStorage.setItem('correo', resultado.correo);
-        localStorage.setItem('tipo', resultado.tipo);
-
-        window.location.href = '../interfaces/verification.html';
-
+        redirigirAVerificacion(resultado);
     } catch (error) {
         console.error('Error en el registro:\n', error.message);
-        alert(error.message);
+        mostrarMensaje(error.message, 'error');
     } finally {
-        btnRegistro.textContent = originalBtnTxt;
+        btnRegistro.textContent = textoOriginal;
         btnRegistro.disabled = false;
     }
-});
+}
 
 /* -------------------------------------------------------------
-CARGA DEL DOM
+METODO PARA INICIALIZAR LA VISTA DE LOGIN
 ------------------------------------------------------------- */
-document.addEventListener('DOMContentLoaded', () => {
+
+function inicializarLogin() {
     alternarModalRegistro();
     alternarModalLogin();
-});
+
+    const avisoPendiente = sessionStorage.getItem('loginNotice');
+
+    if (avisoPendiente) {
+        mostrarMensaje(avisoPendiente, 'warning');
+        sessionStorage.removeItem('loginNotice');
+    }
+}
+
+switchDocente.addEventListener('click', manejarSeleccionDocente);
+switchAlumno.addEventListener('click', manejarSeleccionAlumno);
+themeBtn.addEventListener('click', alternarTema);
+loginRef.addEventListener('click', mostrarRegistro);
+signRef.addEventListener('click', mostrarLogin);
+formLogin.addEventListener('submit', manejarLogin);
+formRegistro.addEventListener('submit', manejarRegistro);
+document.addEventListener('DOMContentLoaded', inicializarLogin);
