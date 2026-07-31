@@ -4,6 +4,7 @@ DEFINICION DE VARIABLES DEL DOM
 
 const themeBtn = document.getElementById('cambiador-tema');
 const logoutBtn = document.getElementById('cerrar-sesion');
+const dashboardMain = document.querySelector('.dashboard-main');
 const botonesNavegacion = Array.from(document.querySelectorAll('[data-vista]'));
 const seccionesVista = Array.from(document.querySelectorAll('.view-section'));
 
@@ -28,6 +29,26 @@ const campoGrupoActual = document.getElementById('campo-grupo-actual');
 const saludoUsuario = document.getElementById('saludo-usuario');
 const mensajePerfil = document.getElementById('mensaje-perfil');
 const guardarBtn = document.getElementById('guardar-perfil');
+
+const volverPerfilPublicoBtn = document.getElementById('volver-perfil-publico');
+const perfilPublicoTitle = document.getElementById('perfil-publico-title');
+const perfilPublicoDescripcion = document.getElementById('perfil-publico-descripcion');
+const mensajePerfilPublico = document.getElementById('mensaje-perfil-publico');
+const imagenPerfilPublico = document.getElementById('imagen-perfil-publico');
+const nombrePerfilPublicoInput = document.getElementById('nombre-perfil-publico');
+const rolPerfilPublicoInput = document.getElementById('rol-perfil-publico');
+const correoPerfilPublicoInput = document.getElementById('correo-perfil-publico');
+const horasPerfilPublicoInput = document.getElementById('horas-perfil-publico');
+const cicloPerfilPublicoInput = document.getElementById('ciclo-perfil-publico');
+const controlPerfilPublicoInput = document.getElementById('control-perfil-publico');
+const semestrePerfilPublicoInput = document.getElementById('semestre-perfil-publico');
+const grupoPerfilPublicoInput = document.getElementById('grupo-perfil-publico');
+const campoCorreoPerfilPublico = document.getElementById('campo-correo-perfil-publico');
+const campoHorasPerfilPublico = document.getElementById('campo-horas-perfil-publico');
+const campoCicloPerfilPublico = document.getElementById('campo-ciclo-perfil-publico');
+const campoControlPerfilPublico = document.getElementById('campo-control-perfil-publico');
+const campoSemestrePerfilPublico = document.getElementById('campo-semestre-perfil-publico');
+const campoGrupoPerfilPublico = document.getElementById('campo-grupo-perfil-publico');
 
 const tablaDocentes = document.getElementById('tabla-docentes');
 const tablaMaterias = document.getElementById('tabla-materias');
@@ -76,10 +97,12 @@ const paginas = {
 
 let perfilActual = null;
 let urlVistaPrevia = null;
+let archivoImagenRecortada = null;
 let materiasActuales = [];
 let docentesDisponibles = null;
 let materiaEditandoId = null;
 let opcionesConfiguracion = null;
+let vistaAnteriorPerfilPublico = 'docentes';
 
 /* -------------------------------------------------------------
 METODO PARA MOSTRAR UN MENSAJE EN UN CONTENEDOR
@@ -227,6 +250,7 @@ METODO PARA MOSTRAR LOS DATOS DEL PERFIL EN LA INTERFAZ
 function renderizarPerfil(perfil) {
     perfilActual = perfil;
     liberarVistaPrevia();
+    archivoImagenRecortada = null;
     editarBtn.disabled = false;
 
     nombreInput.value = perfil.nombre || '';
@@ -308,7 +332,7 @@ function cancelarEdicion() {
 METODO PARA VALIDAR Y PREVISUALIZAR UNA NUEVA IMAGEN
 ------------------------------------------------------------- */
 
-function manejarSeleccionImagen() {
+async function manejarSeleccionImagen() {
     const archivo = imagenInput.files[0];
 
     if (!archivo) return;
@@ -335,10 +359,42 @@ function manejarSeleccionImagen() {
         return;
     }
 
-    liberarVistaPrevia();
-    urlVistaPrevia = URL.createObjectURL(archivo);
-    imagenPerfil.src = urlVistaPrevia;
-    ocultarMensaje(mensajePerfil);
+    if (typeof window.recortarImagenPerfil !== 'function') {
+        imagenInput.value = '';
+        mostrarMensaje(
+            mensajePerfil,
+            'El recortador de imagen no está disponible.',
+            'error'
+        );
+        return;
+    }
+
+    try {
+        const archivoRecortado = await window.recortarImagenPerfil(archivo);
+
+        if (!archivoRecortado) {
+            imagenInput.value = '';
+            return;
+        }
+
+        liberarVistaPrevia();
+        archivoImagenRecortada = archivoRecortado;
+        urlVistaPrevia = URL.createObjectURL(archivoRecortado);
+        imagenPerfil.src = urlVistaPrevia;
+        imagenInput.value = '';
+        ocultarMensaje(mensajePerfil);
+    } catch (error) {
+        console.error(
+            'Error al procesar la imagen de perfil:\n',
+            error.message
+        );
+        mostrarMensaje(
+            mensajePerfil,
+            'No fue posible procesar la imagen seleccionada.',
+            'error'
+        );
+        imagenInput.value = '';
+    }
 }
 
 /* -------------------------------------------------------------
@@ -382,8 +438,8 @@ async function guardarPerfil(evento) {
         datos.append('horas_disponibles', horasInput.value);
     }
 
-    if (imagenInput.files[0]) {
-        datos.append('imagen', imagenInput.files[0]);
+    if (archivoImagenRecortada) {
+        datos.append('imagen', archivoImagenRecortada);
     }
 
     guardarBtn.disabled = true;
@@ -429,6 +485,32 @@ function crearCelda(valor, etiqueta, clase = '') {
         celda.classList.add(clase);
     }
 
+    return celda;
+}
+
+/* -------------------------------------------------------------
+METODO PARA CREAR UN BOTON QUE ABRE EL PERFIL DE UN USUARIO
+------------------------------------------------------------- */
+
+function crearBotonPerfil(nombre, tipo, id, clase = 'profile-name-button') {
+    const boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = clase;
+    boton.dataset.perfilTipo = tipo;
+    boton.dataset.perfilId = id;
+    boton.textContent = nombre;
+    boton.setAttribute('aria-label', `Abrir el perfil de ${nombre}`);
+    return boton;
+}
+
+/* -------------------------------------------------------------
+METODO PARA CREAR UNA CELDA CON EL NOMBRE INTERACTIVO DE UN USUARIO
+------------------------------------------------------------- */
+
+function crearCeldaPerfil(nombre, tipo, id, etiqueta = 'Nombre') {
+    const celda = document.createElement('td');
+    celda.dataset.label = etiqueta;
+    celda.appendChild(crearBotonPerfil(nombre, tipo, id));
     return celda;
 }
 
@@ -479,7 +561,11 @@ function renderizarDocentes(docentes) {
 
     docentes.forEach((docente) => {
         const fila = document.createElement('tr');
-        fila.appendChild(crearCelda(docente.nombre, 'Nombre'));
+        fila.appendChild(crearCeldaPerfil(
+            docente.nombre,
+            'docente',
+            docente.id
+        ));
         fila.appendChild(crearCelda(docente.correo, 'Correo'));
         fila.appendChild(crearCelda(
             String(docente.horas_disponibles),
@@ -530,10 +616,22 @@ function crearListaDocentes(asignaciones) {
     }
 
     asignaciones.forEach((asignacion) => {
-        const etiqueta = document.createElement('span');
-        etiqueta.className = 'teacher-tag';
-        etiqueta.textContent = asignacion.docente?.nombre || 'Docente no disponible';
-        contenedor.appendChild(etiqueta);
+        const docente = asignacion.docente;
+
+        if (!docente) {
+            const etiqueta = document.createElement('span');
+            etiqueta.className = 'teacher-tag';
+            etiqueta.textContent = 'Docente no disponible';
+            contenedor.appendChild(etiqueta);
+            return;
+        }
+
+        contenedor.appendChild(crearBotonPerfil(
+            docente.nombre,
+            'docente',
+            docente.id,
+            'teacher-tag teacher-profile-button'
+        ));
     });
 
     return contenedor;
@@ -642,7 +740,11 @@ function renderizarAlumnos(alumnos) {
         const correo = alumno.correo || 'Privado';
         const claseCorreo = alumno.correo ? '' : 'private-value';
 
-        fila.appendChild(crearCelda(alumno.nombre, 'Nombre'));
+        fila.appendChild(crearCeldaPerfil(
+            alumno.nombre,
+            'alumno',
+            alumno.id
+        ));
         fila.appendChild(crearCelda(correo, 'Correo', claseCorreo));
         fila.appendChild(crearCelda(alumno.ciclo_ingreso, 'Ciclo de ingreso'));
         fila.appendChild(crearCelda(
@@ -855,6 +957,171 @@ function manejarEdicionMateria(evento) {
 }
 
 /* -------------------------------------------------------------
+METODO PARA MOSTRAR U OCULTAR UN CAMPO DEL PERFIL CONSULTADO
+------------------------------------------------------------- */
+
+function actualizarCampoPerfilPublico(contenedor, input, valor, formateador = null) {
+    const tieneValor = valor !== undefined && valor !== null;
+    contenedor.classList.toggle('hidden', !tieneValor);
+    input.value = tieneValor
+        ? formateador
+            ? formateador(valor)
+            : valor
+        : '';
+}
+
+/* -------------------------------------------------------------
+METODO PARA LIMPIAR LOS DATOS VISIBLES DEL PERFIL CONSULTADO
+------------------------------------------------------------- */
+
+function limpiarPerfilPublico() {
+    perfilPublicoTitle.textContent = 'Perfil';
+    perfilPublicoDescripcion.textContent = 'Cargando información permitida...';
+    imagenPerfilPublico.src = IMAGEN_PREDETERMINADA;
+    nombrePerfilPublicoInput.value = '';
+    rolPerfilPublicoInput.value = '';
+
+    [
+        campoCorreoPerfilPublico,
+        campoHorasPerfilPublico,
+        campoCicloPerfilPublico,
+        campoControlPerfilPublico,
+        campoSemestrePerfilPublico,
+        campoGrupoPerfilPublico
+    ].forEach((campo) => campo.classList.add('hidden'));
+}
+
+/* -------------------------------------------------------------
+METODO PARA RENDERIZAR LA INFORMACION PERMITIDA DE UN PERFIL AJENO
+------------------------------------------------------------- */
+
+function renderizarPerfilPublico(perfil) {
+    const esDocente = perfil.tipo === 'docente';
+    const esAlumno = perfil.tipo === 'alumno';
+
+    perfilPublicoTitle.textContent = perfil.nombre;
+    perfilPublicoDescripcion.textContent = esDocente
+        ? 'Información laboral permitida del docente.'
+        : perfil.correo
+            ? 'Información académica permitida del alumno.'
+            : 'Información pública del alumno. Los datos privados permanecen ocultos.';
+    imagenPerfilPublico.src = perfil.imagen || IMAGEN_PREDETERMINADA;
+    nombrePerfilPublicoInput.value = perfil.nombre || '';
+    rolPerfilPublicoInput.value = esDocente ? 'Docente' : 'Alumno';
+
+    actualizarCampoPerfilPublico(
+        campoCorreoPerfilPublico,
+        correoPerfilPublicoInput,
+        perfil.correo
+    );
+    actualizarCampoPerfilPublico(
+        campoHorasPerfilPublico,
+        horasPerfilPublicoInput,
+        esDocente ? perfil.horas_disponibles : undefined,
+        (horas) => `${horas} horas semanales`
+    );
+    actualizarCampoPerfilPublico(
+        campoCicloPerfilPublico,
+        cicloPerfilPublicoInput,
+        esAlumno ? perfil.ciclo_ingreso || 'Pendiente' : undefined
+    );
+    actualizarCampoPerfilPublico(
+        campoControlPerfilPublico,
+        controlPerfilPublicoInput,
+        esAlumno ? perfil.numero_control : undefined
+    );
+    actualizarCampoPerfilPublico(
+        campoSemestrePerfilPublico,
+        semestrePerfilPublicoInput,
+        perfil.semestre_actual,
+        formatearSemestre
+    );
+    actualizarCampoPerfilPublico(
+        campoGrupoPerfilPublico,
+        grupoPerfilPublicoInput,
+        perfil.grupo_actual
+    );
+}
+
+/* -------------------------------------------------------------
+METODO PARA OBTENER EL NOMBRE DE LA VISTA ACTUAL DEL DASHBOARD
+------------------------------------------------------------- */
+
+function obtenerVistaVisible() {
+    const seccion = seccionesVista.find((elemento) => {
+        return !elemento.classList.contains('hidden')
+            && elemento.id !== 'vista-perfil-publico';
+    });
+
+    return seccion?.id.replace('vista-', '') || 'perfil';
+}
+
+/* -------------------------------------------------------------
+METODO PARA ABRIR EL PERFIL PERMITIDO DE UN USUARIO
+------------------------------------------------------------- */
+
+async function abrirPerfilPublico(tipo, id) {
+    const esPerfilPropio = perfilActual
+        && perfilActual.tipo === tipo
+        && String(perfilActual.id) === String(id);
+
+    if (esPerfilPropio) {
+        mostrarVistaDashboard('perfil', false);
+        return;
+    }
+
+    vistaAnteriorPerfilPublico = obtenerVistaVisible();
+    seccionesVista.forEach((seccion) => seccion.classList.add('hidden'));
+    document.getElementById('vista-perfil-publico').classList.remove('hidden');
+    limpiarPerfilPublico();
+    ocultarMensaje(mensajePerfilPublico);
+    mostrarMensaje(
+        mensajePerfilPublico,
+        'Cargando información del perfil...',
+        'info'
+    );
+
+    try {
+        const { response, resultado } = await solicitarApi(
+            `/perfil/${tipo}/${id}`
+        );
+
+        if (!response.ok) {
+            throw new Error(resultado.mensaje || 'No fue posible cargar el perfil');
+        }
+
+        ocultarMensaje(mensajePerfilPublico);
+        renderizarPerfilPublico(resultado.usuario);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+        mostrarMensaje(mensajePerfilPublico, error.message, 'error');
+    }
+}
+
+/* -------------------------------------------------------------
+METODO PARA PROCESAR UN NOMBRE INTERACTIVO DEL DIRECTORIO
+------------------------------------------------------------- */
+
+function manejarAperturaPerfil(evento) {
+    const boton = evento.target.closest('[data-perfil-tipo]');
+
+    if (!boton) return;
+
+    abrirPerfilPublico(
+        boton.dataset.perfilTipo,
+        boton.dataset.perfilId
+    );
+}
+
+/* -------------------------------------------------------------
+METODO PARA REGRESAR DEL PERFIL CONSULTADO AL LISTADO ANTERIOR
+------------------------------------------------------------- */
+
+function volverDelPerfilPublico() {
+    mostrarVistaDashboard(vistaAnteriorPerfilPublico, false);
+}
+
+/* -------------------------------------------------------------
 METODO PARA CARGAR LA VISTA SELECCIONADA
 ------------------------------------------------------------- */
 
@@ -873,15 +1140,15 @@ function cargarVista(nombreVista) {
 }
 
 /* -------------------------------------------------------------
-METODO PARA CAMBIAR ENTRE LAS VISTAS DEL DASHBOARD
+METODO PARA MOSTRAR UNA VISTA DEL DASHBOARD POR SU NOMBRE
 ------------------------------------------------------------- */
 
-function cambiarVista(evento) {
-    const boton = evento.currentTarget;
-    const nombreVista = boton.dataset.vista;
-
+function mostrarVistaDashboard(nombreVista, cargarDatos = true) {
     botonesNavegacion.forEach((elemento) => {
-        elemento.classList.toggle('active', elemento === boton);
+        elemento.classList.toggle(
+            'active',
+            elemento.dataset.vista === nombreVista
+        );
     });
     seccionesVista.forEach((seccion) => {
         seccion.classList.toggle(
@@ -890,7 +1157,19 @@ function cambiarVista(evento) {
         );
     });
 
-    cargarVista(nombreVista);
+    if (cargarDatos) {
+        cargarVista(nombreVista);
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* -------------------------------------------------------------
+METODO PARA CAMBIAR ENTRE LAS VISTAS DEL DASHBOARD
+------------------------------------------------------------- */
+
+function cambiarVista(evento) {
+    mostrarVistaDashboard(evento.currentTarget.dataset.vista);
 }
 
 /* -------------------------------------------------------------
@@ -1104,6 +1383,8 @@ cancelarMateriaBtn.addEventListener('click', cerrarEditorMateria);
 descartarMateriaBtn.addEventListener('click', cerrarEditorMateria);
 formMateria.addEventListener('submit', guardarMateria);
 tablaMaterias.addEventListener('click', manejarEdicionMateria);
+dashboardMain.addEventListener('click', manejarAperturaPerfil);
+volverPerfilPublicoBtn.addEventListener('click', volverDelPerfilPublico);
 periodoIngresoSelect.addEventListener('change', actualizarGruposConfiguracion);
 formConfiguracion.addEventListener('submit', guardarConfiguracionInicial);
 salirConfiguracionBtn.addEventListener('click', cerrarSesion);

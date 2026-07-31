@@ -158,6 +158,97 @@
             </form>
         </section>
 
+        <section class="content-card view-section hidden" id="vista-perfil-publico" aria-labelledby="perfil-publico-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Directorio académico</p>
+                    <h1 id="perfil-publico-title">Perfil</h1>
+                    <p id="perfil-publico-descripcion">Información permitida del usuario seleccionado.</p>
+                </div>
+
+                <button class="secondary-button" id="volver-perfil-publico" type="button">
+                    <i class="ri-arrow-left-line"></i>
+                    Regresar
+                </button>
+            </div>
+
+            <div class="app-message hidden" id="mensaje-perfil-publico" role="status" aria-live="polite"></div>
+
+            <div class="profile-content public-profile-content">
+                <div class="avatar-column">
+                    <div class="avatar-frame">
+                        <img id="imagen-perfil-publico" src="../public/user-default-icon.png" alt="Imagen del perfil consultado">
+                    </div>
+                </div>
+
+                <div class="profile-fields">
+                    <div class="field-group">
+                        <label for="nombre-perfil-publico">Nombre completo</label>
+                        <div class="input-wrapper readonly">
+                            <i class="ri-user-line"></i>
+                            <input id="nombre-perfil-publico" type="text" disabled>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="rol-perfil-publico">Tipo de cuenta</label>
+                        <div class="input-wrapper readonly">
+                            <i class="ri-shield-user-line"></i>
+                            <input id="rol-perfil-publico" type="text" disabled>
+                        </div>
+                    </div>
+
+                    <div class="field-group hidden" id="campo-correo-perfil-publico">
+                        <label for="correo-perfil-publico">Correo</label>
+                        <div class="input-wrapper readonly">
+                            <i class="ri-mail-line"></i>
+                            <input id="correo-perfil-publico" type="text" disabled>
+                        </div>
+                    </div>
+
+                    <div class="field-group hidden" id="campo-horas-perfil-publico">
+                        <label for="horas-perfil-publico">Horas disponibles</label>
+                        <div class="input-wrapper readonly">
+                            <i class="ri-time-line"></i>
+                            <input id="horas-perfil-publico" type="text" disabled>
+                        </div>
+                    </div>
+
+                    <div class="field-group hidden" id="campo-ciclo-perfil-publico">
+                        <label for="ciclo-perfil-publico">Ciclo de ingreso</label>
+                        <div class="input-wrapper readonly">
+                            <i class="ri-calendar-check-line"></i>
+                            <input id="ciclo-perfil-publico" type="text" disabled>
+                        </div>
+                    </div>
+
+                    <div class="field-group hidden" id="campo-control-perfil-publico">
+                        <label for="control-perfil-publico">Número de control</label>
+                        <div class="input-wrapper readonly">
+                            <i class="ri-id-card-line"></i>
+                            <input id="control-perfil-publico" type="text" disabled>
+                        </div>
+                    </div>
+
+                    <div class="field-group hidden" id="campo-semestre-perfil-publico">
+                        <label for="semestre-perfil-publico">Semestre actual</label>
+                        <div class="input-wrapper readonly">
+                            <i class="ri-numbers-line"></i>
+                            <input id="semestre-perfil-publico" type="text" disabled>
+                        </div>
+                    </div>
+
+                    <div class="field-group hidden" id="campo-grupo-perfil-publico">
+                        <label for="grupo-perfil-publico">Grupo actual</label>
+                        <div class="input-wrapper readonly">
+                            <i class="ri-team-line"></i>
+                            <input id="grupo-perfil-publico" type="text" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="content-card view-section hidden" id="vista-docentes" aria-labelledby="docentes-title">
             <div class="section-heading">
                 <div>
@@ -325,6 +416,40 @@
         </section>
     </main>
 
+    <div class="modal-backdrop hidden" id="modal-recorte" role="dialog" aria-modal="true" aria-labelledby="recorte-title">
+        <section class="crop-modal">
+            <div class="crop-heading">
+                <div>
+                    <p class="eyebrow">Imagen de perfil</p>
+                    <h2 id="recorte-title">Ajusta el recorte</h2>
+                </div>
+                <button class="icon-button" id="cerrar-recorte" type="button" aria-label="Cancelar recorte">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <p class="crop-help">Arrastra la imagen con el dedo o el mouse. El área visible se guardará en formato cuadrado.</p>
+
+            <div class="crop-stage">
+                <canvas id="lienzo-recorte" width="360" height="360" aria-label="Vista previa del recorte cuadrado"></canvas>
+                <div class="crop-grid" aria-hidden="true"></div>
+            </div>
+
+            <label class="zoom-control" for="zoom-recorte">
+                <span><i class="ri-zoom-in-line"></i> Acercamiento</span>
+                <input id="zoom-recorte" type="range" min="1" max="3" step="0.01" value="1">
+            </label>
+
+            <div class="form-actions compact">
+                <button class="secondary-button" id="cancelar-recorte" type="button">Cancelar</button>
+                <button class="primary-button" id="aplicar-recorte" type="button">
+                    <i class="ri-crop-line"></i>
+                    Aplicar recorte
+                </button>
+            </div>
+        </section>
+    </div>
+
     <div class="modal-backdrop hidden" id="modal-configuracion" role="dialog" aria-modal="true" aria-labelledby="configuracion-title">
         <section class="setup-modal">
             <div class="setup-icon">
@@ -366,6 +491,7 @@
         </section>
     </div>
 
+    <script src="../scripts/profile-cropper.js"></script>
     <script src="../scripts/dashboard.js"></script>
 </body>
 
