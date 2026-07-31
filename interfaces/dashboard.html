@@ -8,7 +8,7 @@
         const temaGuardado = localStorage.getItem('theme');
         if (temaGuardado === 'dark') document.documentElement.setAttribute('theme', 'dark');
     </script>
-    <title>SiCECOBAEJ 65 - Mi perfil</title>
+    <title>SiCECOBAEJ 65 - Dashboard</title>
     <link rel="stylesheet" href="../styles/dashboard.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
@@ -21,19 +21,19 @@
         </a>
 
         <nav class="main-navigation" aria-label="Navegación principal">
-            <button class="navigation-button active" type="button">
+            <button class="navigation-button active" type="button" data-vista="perfil">
                 <i class="ri-user-3-line"></i>
                 <span>Perfil</span>
             </button>
-            <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
+            <button class="navigation-button" type="button" data-vista="docentes">
                 <i class="ri-id-card-line"></i>
                 <span>Docentes</span>
             </button>
-            <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
+            <button class="navigation-button" type="button" data-vista="materias">
                 <i class="ri-book-marked-line"></i>
                 <span>Materias</span>
             </button>
-            <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
+            <button class="navigation-button" type="button" data-vista="alumnos">
                 <i class="ri-graduation-cap-line"></i>
                 <span>Alumnos</span>
             </button>
@@ -54,8 +54,8 @@
     </header>
 
     <main class="dashboard-main">
-        <section class="profile-card" aria-labelledby="profile-title">
-            <div class="profile-heading">
+        <section class="content-card view-section" id="vista-perfil" aria-labelledby="profile-title">
+            <div class="section-heading">
                 <div>
                     <p class="eyebrow">Cuenta personal</p>
                     <h1 id="profile-title">Mi perfil</h1>
@@ -68,7 +68,7 @@
                 </button>
             </div>
 
-            <div class="profile-message hidden" id="mensaje-perfil" role="status" aria-live="polite"></div>
+            <div class="app-message hidden" id="mensaje-perfil" role="status" aria-live="polite"></div>
 
             <form id="form-perfil">
                 <div class="profile-content">
@@ -120,11 +120,27 @@
                             </div>
                         </div>
 
-                        <div class="field-group hidden" id="campo-fecha-ingreso">
-                            <label for="fecha-ingreso">Fecha de ingreso</label>
+                        <div class="field-group hidden" id="campo-ciclo-ingreso">
+                            <label for="ciclo-ingreso">Ciclo de ingreso</label>
                             <div class="input-wrapper readonly">
                                 <i class="ri-calendar-check-line"></i>
-                                <input id="fecha-ingreso" type="text" disabled>
+                                <input id="ciclo-ingreso" type="text" disabled>
+                            </div>
+                        </div>
+
+                        <div class="field-group hidden" id="campo-semestre-actual">
+                            <label for="semestre-actual">Semestre actual</label>
+                            <div class="input-wrapper readonly">
+                                <i class="ri-numbers-line"></i>
+                                <input id="semestre-actual" type="text" disabled>
+                            </div>
+                        </div>
+
+                        <div class="field-group hidden" id="campo-grupo-actual">
+                            <label for="grupo-actual">Grupo actual</label>
+                            <div class="input-wrapper readonly">
+                                <i class="ri-team-line"></i>
+                                <input id="grupo-actual" type="text" disabled>
                             </div>
                         </div>
                     </div>
@@ -141,7 +157,214 @@
                 </div>
             </form>
         </section>
+
+        <section class="content-card view-section hidden" id="vista-docentes" aria-labelledby="docentes-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Directorio académico</p>
+                    <h1 id="docentes-title">Docentes</h1>
+                    <p>Personal docente registrado dentro del sistema.</p>
+                </div>
+            </div>
+
+            <div class="app-message hidden" id="mensaje-docentes" role="status" aria-live="polite"></div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Horas semanales disponibles</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-docentes"></tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="paginacion-docentes">
+                <button class="secondary-button" type="button" data-accion="anterior">
+                    <i class="ri-arrow-left-s-line"></i>
+                    Anterior
+                </button>
+                <span data-resumen>Página 1 de 1</span>
+                <button class="secondary-button" type="button" data-accion="siguiente">
+                    Siguiente
+                    <i class="ri-arrow-right-s-line"></i>
+                </button>
+            </div>
+        </section>
+
+        <section class="content-card view-section hidden" id="vista-materias" aria-labelledby="materias-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Oferta académica</p>
+                    <h1 id="materias-title">Materias</h1>
+                    <p>Materias registradas y docentes responsables.</p>
+                </div>
+
+                <button class="primary-button hidden" id="nueva-materia" type="button">
+                    <i class="ri-add-line"></i>
+                    Nueva materia
+                </button>
+            </div>
+
+            <div class="app-message hidden" id="mensaje-materias" role="status" aria-live="polite"></div>
+
+            <form class="inline-editor hidden" id="form-materia">
+                <div class="editor-heading">
+                    <div>
+                        <p class="eyebrow">Edición rápida</p>
+                        <h2 id="editor-materia-title">Nueva materia</h2>
+                    </div>
+                    <button class="icon-button" id="cancelar-materia" type="button" aria-label="Cerrar editor">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+
+                <div class="editor-grid">
+                    <div class="field-group">
+                        <label for="materia-nombre">Nombre</label>
+                        <input class="standard-input" id="materia-nombre" type="text" maxlength="150" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="materia-semestre">Semestre</label>
+                        <select class="standard-input" id="materia-semestre" required>
+                            <option value="1">Primero</option>
+                            <option value="2">Segundo</option>
+                            <option value="3">Tercero</option>
+                            <option value="4">Cuarto</option>
+                            <option value="5">Quinto</option>
+                            <option value="6">Sexto</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="materia-horas">Horas semanales</label>
+                        <input class="standard-input" id="materia-horas" type="number" min="1" step="1" required>
+                    </div>
+                </div>
+
+                <fieldset class="teacher-selector">
+                    <legend>Docentes que imparten la materia</legend>
+                    <div class="teacher-options" id="docentes-materia"></div>
+                </fieldset>
+
+                <div class="form-actions compact">
+                    <button class="secondary-button" id="descartar-materia" type="button">Cancelar</button>
+                    <button class="primary-button" id="guardar-materia" type="submit">
+                        <i class="ri-save-line"></i>
+                        Guardar materia
+                    </button>
+                </div>
+            </form>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Semestre</th>
+                            <th>Horas semanales</th>
+                            <th>Docentes</th>
+                            <th class="actions-column hidden" id="encabezado-acciones-materia">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-materias"></tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="paginacion-materias">
+                <button class="secondary-button" type="button" data-accion="anterior">
+                    <i class="ri-arrow-left-s-line"></i>
+                    Anterior
+                </button>
+                <span data-resumen>Página 1 de 1</span>
+                <button class="secondary-button" type="button" data-accion="siguiente">
+                    Siguiente
+                    <i class="ri-arrow-right-s-line"></i>
+                </button>
+            </div>
+        </section>
+
+        <section class="content-card view-section hidden" id="vista-alumnos" aria-labelledby="alumnos-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Comunidad estudiantil</p>
+                    <h1 id="alumnos-title">Alumnos</h1>
+                    <p id="descripcion-privacidad-alumnos">Alumnos registrados dentro del sistema.</p>
+                </div>
+            </div>
+
+            <div class="app-message hidden" id="mensaje-alumnos" role="status" aria-live="polite"></div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Ciclo de ingreso</th>
+                            <th>Número de control</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-alumnos"></tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="paginacion-alumnos">
+                <button class="secondary-button" type="button" data-accion="anterior">
+                    <i class="ri-arrow-left-s-line"></i>
+                    Anterior
+                </button>
+                <span data-resumen>Página 1 de 1</span>
+                <button class="secondary-button" type="button" data-accion="siguiente">
+                    Siguiente
+                    <i class="ri-arrow-right-s-line"></i>
+                </button>
+            </div>
+        </section>
     </main>
+
+    <div class="modal-backdrop hidden" id="modal-configuracion" role="dialog" aria-modal="true" aria-labelledby="configuracion-title">
+        <section class="setup-modal">
+            <div class="setup-icon">
+                <i class="ri-graduation-cap-line"></i>
+            </div>
+            <p class="eyebrow">Primer acceso</p>
+            <h2 id="configuracion-title">Completa tu información académica</h2>
+            <p>Selecciona tu ciclo de ingreso. El sistema calculará tu semestre y mostrará únicamente los grupos disponibles.</p>
+
+            <div class="app-message hidden" id="mensaje-configuracion" role="status" aria-live="polite"></div>
+
+            <form id="form-configuracion">
+                <div class="setup-grid">
+                    <div class="field-group">
+                        <label for="periodo-ingreso">Ciclo de ingreso</label>
+                        <select class="standard-input" id="periodo-ingreso" required>
+                            <option value="">Selecciona un ciclo</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="semestre-calculado">Semestre actual</label>
+                        <input class="standard-input readonly-input" id="semestre-calculado" type="text" value="Pendiente" disabled>
+                    </div>
+                    <div class="field-group">
+                        <label for="grupo-seleccionado">Grupo actual</label>
+                        <select class="standard-input" id="grupo-seleccionado" disabled required>
+                            <option value="">Selecciona primero tu ciclo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions compact">
+                    <button class="secondary-button" id="salir-configuracion" type="button">Cerrar sesión</button>
+                    <button class="primary-button" id="guardar-configuracion" type="submit">
+                        Guardar y continuar
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
 
     <script src="../scripts/dashboard.js"></script>
 </body>

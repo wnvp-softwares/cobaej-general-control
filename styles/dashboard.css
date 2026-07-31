@@ -16,6 +16,7 @@ DEFINICION DE VARIABLES Y TEMAS
     --borde-color: #E2E8F0;
     --error-color: #DC2626;
     --success-color: #15803D;
+    --warning-color: #B45309;
     --sombra: 0 18px 50px rgba(15, 23, 42, 0.08);
 }
 
@@ -31,11 +32,12 @@ DEFINICION DE VARIABLES Y TEMAS
     --borde-color: #334155;
     --error-color: #F87171;
     --success-color: #4ADE80;
+    --warning-color: #FBBF24;
     --sombra: 0 18px 50px rgba(0, 0, 0, 0.28);
 }
 
 /* -------------------------------------------------------------
-DEFINICION DE CONTENEDORES PRINCIPALES
+REGLAS GENERALES
 ------------------------------------------------------------- */
 
 * {
@@ -52,17 +54,44 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+body.modal-open {
+    overflow: hidden;
+}
+
 button,
-input {
+input,
+select {
     font: inherit;
 }
 
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 label:focus-visible,
 a:focus-visible {
     outline: 3px solid color-mix(in srgb, var(--items-color) 45%, transparent);
     outline-offset: 2px;
+}
+
+h1,
+h2,
+p {
+    overflow-wrap: anywhere;
+}
+
+h1 {
+    margin: 0;
+    font-size: clamp(27px, 4vw, 39px);
+    letter-spacing: -0.04em;
+}
+
+h2 {
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+.hidden {
+    display: none !important;
 }
 
 /* -------------------------------------------------------------
@@ -128,6 +157,7 @@ CABECERA Y NAVEGACION
     font-weight: 600;
 }
 
+.navigation-button:hover:not(:disabled),
 .navigation-button.active {
     background: color-mix(in srgb, var(--items-color) 12%, transparent);
     color: var(--items-color);
@@ -160,30 +190,35 @@ CABECERA Y NAVEGACION
 }
 
 /* -------------------------------------------------------------
-TARJETA PRINCIPAL DEL PERFIL
+CONTENEDORES DE LAS VISTAS
 ------------------------------------------------------------- */
 
 .dashboard-main {
-    width: min(1080px, calc(100% - 32px));
+    width: min(1180px, calc(100% - 32px));
     margin: 0 auto;
-    padding: clamp(28px, 5vw, 64px) 0;
+    padding: clamp(24px, 4vw, 48px) 0;
 }
 
-.profile-card {
-    padding: clamp(22px, 4vw, 42px);
+.content-card {
+    padding: clamp(22px, 4vw, 38px);
     border: 1px solid var(--borde-color);
     border-radius: 24px;
     background: var(--superficie-color);
     box-shadow: var(--sombra);
 }
 
-.profile-heading {
+.section-heading {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 24px;
-    padding-bottom: 26px;
+    padding-bottom: 24px;
     border-bottom: 1px solid var(--borde-color);
+}
+
+.section-heading p:last-child {
+    margin: 8px 0 0;
+    color: var(--texto-secundario);
 }
 
 .eyebrow {
@@ -195,27 +230,16 @@ TARJETA PRINCIPAL DEL PERFIL
     text-transform: uppercase;
 }
 
-h1 {
-    margin: 0;
-    font-size: clamp(28px, 4vw, 40px);
-    letter-spacing: -0.04em;
-}
-
-.profile-heading p:last-child {
-    margin: 8px 0 0;
-    color: var(--texto-secundario);
-}
+/* -------------------------------------------------------------
+VISTA DEL PERFIL
+------------------------------------------------------------- */
 
 .profile-content {
     display: grid;
-    grid-template-columns: minmax(210px, 280px) minmax(0, 1fr);
-    gap: clamp(32px, 6vw, 70px);
-    padding-top: 34px;
+    grid-template-columns: minmax(210px, 270px) minmax(0, 1fr);
+    gap: clamp(30px, 6vw, 64px);
+    padding-top: 30px;
 }
-
-/* -------------------------------------------------------------
-IMAGEN DEL PERFIL
-------------------------------------------------------------- */
 
 .avatar-column {
     display: flex;
@@ -224,7 +248,7 @@ IMAGEN DEL PERFIL
 }
 
 .avatar-frame {
-    width: min(220px, 65vw);
+    width: min(205px, 65vw);
     aspect-ratio: 1;
     padding: 6px;
     border: 1px solid var(--borde-color);
@@ -265,21 +289,22 @@ IMAGEN DEL PERFIL
     text-align: center;
 }
 
-/* -------------------------------------------------------------
-CAMPOS DEL PERFIL
-------------------------------------------------------------- */
-
 .profile-fields {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 22px;
+    gap: 20px;
 }
+
+/* -------------------------------------------------------------
+CAMPOS Y FORMULARIOS
+------------------------------------------------------------- */
 
 .field-group {
     min-width: 0;
 }
 
-.field-group label {
+.field-group label,
+.teacher-selector legend {
     display: block;
     margin-bottom: 8px;
     font-size: 13px;
@@ -310,7 +335,8 @@ CAMPOS DEL PERFIL
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--items-color) 15%, transparent);
 }
 
-.input-wrapper.readonly {
+.input-wrapper.readonly,
+.readonly-input {
     background: var(--superficie-secundaria);
 }
 
@@ -340,6 +366,27 @@ CAMPOS DEL PERFIL
     -webkit-text-fill-color: var(--texto-color);
 }
 
+.standard-input {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 13px;
+    border: 1px solid var(--borde-color);
+    border-radius: 12px;
+    outline: none;
+    background: var(--superficie-color);
+    color: var(--texto-color);
+}
+
+.standard-input:focus {
+    border-color: var(--items-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--items-color) 15%, transparent);
+}
+
+.standard-input:disabled {
+    opacity: 1;
+    color: var(--texto-secundario);
+}
+
 /* -------------------------------------------------------------
 BOTONES Y MENSAJES
 ------------------------------------------------------------- */
@@ -363,7 +410,7 @@ BOTONES Y MENSAJES
     color: #FFFFFF;
 }
 
-.primary-button:hover {
+.primary-button:hover:not(:disabled) {
     background: var(--items-hover);
 }
 
@@ -373,7 +420,7 @@ BOTONES Y MENSAJES
     color: var(--texto-color);
 }
 
-.secondary-button:hover {
+.secondary-button:hover:not(:disabled) {
     border-color: var(--items-color);
     color: var(--items-color);
 }
@@ -381,46 +428,278 @@ BOTONES Y MENSAJES
 .primary-button:disabled,
 .secondary-button:disabled {
     cursor: wait;
-    opacity: 0.65;
+    opacity: 0.6;
 }
 
 .form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    margin-top: 34px;
-    padding-top: 24px;
+    margin-top: 30px;
+    padding-top: 22px;
     border-top: 1px solid var(--borde-color);
 }
 
-.profile-message {
-    margin-top: 22px;
-    padding: 12px 16px;
+.form-actions.compact {
+    margin-top: 20px;
+    padding-top: 18px;
+}
+
+.app-message {
+    margin-top: 18px;
+    padding: 11px 15px;
     border: 1px solid var(--ref-color);
     border-radius: 12px;
     background: color-mix(in srgb, var(--items-color) 8%, transparent);
     line-height: 1.5;
 }
 
-.profile-message.error {
+.app-message.error {
     border-color: var(--error-color);
     color: var(--error-color);
 }
 
-.profile-message.success {
+.app-message.success {
     border-color: var(--success-color);
     color: var(--success-color);
 }
 
-.hidden {
-    display: none !important;
+.app-message.warning {
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+/* -------------------------------------------------------------
+TABLAS Y PAGINACION
+------------------------------------------------------------- */
+
+.table-wrapper {
+    margin-top: 24px;
+    border: 1px solid var(--borde-color);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+th,
+td {
+    padding: 13px 15px;
+    border-bottom: 1px solid var(--borde-color);
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+th {
+    background: var(--superficie-secundaria);
+    color: var(--texto-secundario);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+td {
+    font-size: 14px;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:hover td {
+    background: color-mix(in srgb, var(--items-color) 4%, transparent);
+}
+
+.empty-cell {
+    padding: 32px 18px;
+    color: var(--texto-secundario);
+    text-align: center;
+}
+
+.private-value {
+    color: var(--texto-secundario);
+    font-style: italic;
+}
+
+.teacher-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.teacher-tag {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--items-color) 10%, transparent);
+    color: var(--items-color);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.row-action {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--borde-color);
+    border-radius: 10px;
+    background: var(--superficie-color);
+    color: var(--items-color);
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.row-action:hover {
+    border-color: var(--items-color);
+}
+
+.actions-column {
+    width: 90px;
+    text-align: center;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.pagination span {
+    color: var(--texto-secundario);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* -------------------------------------------------------------
+EDITOR RAPIDO DE MATERIAS
+------------------------------------------------------------- */
+
+.inline-editor {
+    margin-top: 22px;
+    padding: 20px;
+    border: 1px solid var(--borde-color);
+    border-radius: 16px;
+    background: var(--superficie-secundaria);
+}
+
+.editor-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.editor-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(140px, 1fr));
+    gap: 15px;
+}
+
+.teacher-selector {
+    min-width: 0;
+    margin: 18px 0 0;
+    padding: 14px;
+    border: 1px solid var(--borde-color);
+    border-radius: 13px;
+}
+
+.teacher-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.teacher-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 9px 10px;
+    border: 1px solid var(--borde-color);
+    border-radius: 10px;
+    background: var(--superficie-color);
+    cursor: pointer;
+}
+
+.teacher-option:has(input:checked) {
+    border-color: var(--items-color);
+    background: color-mix(in srgb, var(--items-color) 8%, var(--superficie-color));
+}
+
+.teacher-option span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+/* -------------------------------------------------------------
+CONFIGURACION INICIAL DEL ALUMNO
+------------------------------------------------------------- */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+.setup-modal {
+    width: min(680px, 100%);
+    max-height: calc(100vh - 40px);
+    padding: clamp(24px, 5vw, 38px);
+    overflow-y: auto;
+    border: 1px solid var(--borde-color);
+    border-radius: 24px;
+    background: var(--superficie-color);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+.setup-modal > p:not(.eyebrow) {
+    margin: 10px 0 0;
+    color: var(--texto-secundario);
+    line-height: 1.55;
+}
+
+.setup-icon {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 18px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--items-color) 12%, transparent);
+    color: var(--items-color);
+    font-size: 28px;
+}
+
+.setup-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.setup-grid .field-group:last-child {
+    grid-column: 1 / -1;
 }
 
 /* -------------------------------------------------------------
 DISEÑO RESPONSIVO
 ------------------------------------------------------------- */
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 920px) {
     .app-header {
         grid-template-columns: 1fr auto;
     }
@@ -438,7 +717,92 @@ DISEÑO RESPONSIVO
     }
 
     .avatar-column {
-        padding-bottom: 8px;
+        padding-bottom: 6px;
+    }
+
+    .teacher-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media screen and (max-width: 720px) {
+    .editor-grid,
+    .setup-grid,
+    .profile-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .setup-grid .field-group:last-child {
+        grid-column: auto;
+    }
+
+    .table-wrapper {
+        border: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    table,
+    tbody,
+    tr,
+    td {
+        display: block;
+        width: 100%;
+    }
+
+    thead {
+        display: none;
+    }
+
+    tbody {
+        display: grid;
+        gap: 12px;
+    }
+
+    tbody tr {
+        padding: 7px 14px;
+        border: 1px solid var(--borde-color);
+        border-radius: 14px;
+        background: var(--superficie-color);
+    }
+
+    tbody tr:hover td {
+        background: transparent;
+    }
+
+    td {
+        display: grid;
+        grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--borde-color);
+    }
+
+    td::before {
+        content: attr(data-label);
+        color: var(--texto-secundario);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    td:last-child {
+        border-bottom: none;
+    }
+
+    .empty-cell {
+        display: block;
+        text-align: center;
+    }
+
+    .empty-cell::before {
+        content: none;
+    }
+
+    .actions-column {
+        width: auto;
+        text-align: left;
     }
 }
 
@@ -461,33 +825,44 @@ DISEÑO RESPONSIVO
     }
 
     .dashboard-main {
-        width: min(100% - 20px, 1080px);
-        padding: 18px 0 28px;
+        width: min(100% - 20px, 1180px);
+        padding: 16px 0 26px;
     }
 
-    .profile-card {
-        padding: 20px 16px;
+    .content-card {
+        padding: 19px 15px;
         border-radius: 18px;
     }
 
-    .profile-heading {
+    .section-heading {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .profile-heading .secondary-button {
+    .section-heading > button {
         width: 100%;
     }
 
-    .profile-fields {
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions {
+    .form-actions,
+    .pagination {
         flex-direction: column-reverse;
     }
 
-    .form-actions button {
+    .form-actions button,
+    .pagination button {
         width: 100%;
+    }
+
+    .teacher-options {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-backdrop {
+        padding: 10px;
+    }
+
+    .setup-modal {
+        max-height: calc(100vh - 20px);
+        border-radius: 18px;
     }
 }

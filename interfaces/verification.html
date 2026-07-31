@@ -15,20 +15,22 @@
 
 <body>
 
-    <main>
+    <main class="verification-card">
 
         <button class="theme-selector" id="cambiador-tema" type="button" aria-label="Cambiar tema">
             <i class="ri-sun-fill"></i>
         </button>
 
-        <h1>SiCECOBAEJ TBC #65</h1>
-        <h2>Sistema de Control Escolar del COBAEJ TBC #65</h2>
-        <img src="../public/COBAEJ-logo-deep.png" alt="COBAEJ Logotipo Oscuro">
-        <h1>VERIFICACIÓN</h1>
-        <h2>Ingresa tu código</h2>
+        <h1 class="brand-title">SiCECOBAEJ TBC #65</h1>
+        <h2 class="brand-subtitle">Sistema de Control Escolar del COBAEJ TBC #65</h2>
+        <img class="brand-logo" src="../public/COBAEJ-logo-deep.png" alt="COBAEJ Logotipo Oscuro">
+        <h1 class="verification-title">Verificación</h1>
+        <h2 class="verification-subtitle">Ingresa tu código</h2>
         <p class="verification-destination" id="destino-verificacion"></p>
-        <h2>¡Revisa tu apartado de SPAM!</h2>
-        <p>Es posible que Gmail clasifique los correos de verificación por parte de SiCECOBAEJ como SPAM</p>
+        <p class="spam-notice">
+            <i class="ri-spam-2-line"></i>
+            Revisa también SPAM; Gmail podría clasificar ahí el mensaje.
+        </p>
         <div class="verification-message hidden" id="mensaje-verificacion" role="status" aria-live="polite"></div>
 
         <form action="submit" id="form-verificacion">
