@@ -293,7 +293,7 @@ MODAL SOBREPUESTO
     text-align: center;
 }
 
-.success {
+.success-icon {
     margin: 20px 0 0 0;
     font-size: 70px;
     border: solid;
@@ -354,7 +354,7 @@ MEDIA QUERIES (DISEÑO RESPONSIVO)
         font-size: 20px;
     }
 
-    .success {
+    .success-icon {
         font-size: 50px;
         padding: 8px 12px;
         margin: 15px 0 0 0;
