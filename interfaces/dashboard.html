@@ -430,10 +430,23 @@
                     <div class="field-group"><label for="actividad-inicio">Fecha de inicio</label><input class="standard-input" id="actividad-inicio" type="datetime-local" required></div>
                     <div class="field-group"><label for="actividad-cierre">Fecha de cierre</label><input class="standard-input" id="actividad-cierre" type="datetime-local" required></div>
                     <div class="field-group"><label for="actividad-valor">Valor máximo</label><input class="standard-input" id="actividad-valor" type="number" min="0.01" step="0.01" required></div>
-                    <div class="field-group"><label for="actividad-archivos">Materiales (máximo 5)</label><input class="standard-input" id="actividad-archivos" type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp"></div>
+                    <div class="field-group full-field">
+                        <span class="field-label">Materiales de referencia</span>
+                        <div class="file-uploader">
+                            <input id="actividad-archivos" type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp" hidden>
+                            <label class="file-picker" for="actividad-archivos">
+                                <span class="file-picker-icon"><i class="ri-upload-cloud-2-line"></i></span>
+                                <span>
+                                    <strong>Seleccionar archivos</strong>
+                                    <small>PDF, JPG, PNG o WEBP. Máximo 5 archivos de 10 MB.</small>
+                                </span>
+                            </label>
+                            <div class="file-preview-list hidden" id="previsualizacion-archivos" aria-live="polite"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="rubric-editor"><div class="editor-heading"><h3>Rúbricas individuales</h3><button class="secondary-button" id="agregar-rubrica" type="button"><i class="ri-add-line"></i> Agregar criterio</button></div><div id="rubricas-editor"></div></div>
-                <div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="actividad">Cancelar</button><button class="primary-button" type="submit">Guardar actividad</button></div>
+                <div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="actividad">Cancelar</button><button class="primary-button" id="guardar-actividad" type="submit">Guardar actividad</button></div>
             </form>
         </section>
     </div>

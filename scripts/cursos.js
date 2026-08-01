@@ -25,6 +25,9 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     const seccionAlumnos = document.getElementById('alumnos-curso-seccion');
     const rubricasEditor = document.getElementById('rubricas-editor');
     const rubricasCalificacion = document.getElementById('rubricas-calificacion');
+    const archivosActividadInput = document.getElementById('actividad-archivos');
+    const previsualizacionArchivos = document.getElementById('previsualizacion-archivos');
+    const guardarActividadBoton = document.getElementById('guardar-actividad');
     let pagina = 1;
     let cursos = [];
     let opcionesCurso = null;
@@ -32,6 +35,7 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     let cursoPendienteInscripcion = null;
     let alumnoCalificando = null;
     let actividadCalificando = null;
+    let urlsPrevisualizacion = [];
 
     /* -------------------------------------------------------------
     METODO PARA MOSTRAR U OCULTAR UN MODAL DEL MODULO
@@ -51,6 +55,110 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
         opcion.value = valor;
         opcion.textContent = texto;
         select.appendChild(opcion);
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA FORMATEAR EL TAMANO DE UN ARCHIVO EN UNA ETIQUETA LEGIBLE
+    ------------------------------------------------------------- */
+
+    function formatearTamanoArchivo(bytes) {
+        if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA LIBERAR LAS URL TEMPORALES DE LAS VISTAS PREVIAS
+    ------------------------------------------------------------- */
+
+    function liberarPrevisualizaciones() {
+        urlsPrevisualizacion.forEach((url) => URL.revokeObjectURL(url));
+        urlsPrevisualizacion = [];
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA ELIMINAR UN ARCHIVO DE LA SELECCION ACTUAL
+    ------------------------------------------------------------- */
+
+    function quitarArchivoSeleccionado(indice) {
+        const transferencia = new DataTransfer();
+        Array.from(archivosActividadInput.files).forEach((archivo, posicion) => {
+            if (posicion !== indice) transferencia.items.add(archivo);
+        });
+        archivosActividadInput.files = transferencia.files;
+        renderizarPrevisualizacionArchivos();
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA RENDERIZAR MINIATURAS Y DATOS DE LOS ARCHIVOS SELECCIONADOS
+    ------------------------------------------------------------- */
+
+    function renderizarPrevisualizacionArchivos() {
+        liberarPrevisualizaciones();
+        previsualizacionArchivos.replaceChildren();
+        const archivos = Array.from(archivosActividadInput.files);
+        previsualizacionArchivos.classList.toggle('hidden', archivos.length === 0);
+
+        archivos.forEach((archivo, indice) => {
+            const tarjeta = document.createElement('article');
+            const visual = document.createElement('div');
+            const datos = document.createElement('div');
+            const nombre = document.createElement('strong');
+            const detalle = document.createElement('small');
+            const quitar = document.createElement('button');
+            tarjeta.className = 'file-preview-card';
+            visual.className = 'file-preview-visual';
+            datos.className = 'file-preview-data';
+            nombre.textContent = archivo.name;
+            detalle.textContent = `${archivo.type === 'application/pdf' ? 'Documento PDF' : 'Imagen'} · ${formatearTamanoArchivo(archivo.size)}`;
+            quitar.type = 'button';
+            quitar.className = 'file-remove-button';
+            quitar.dataset.quitarArchivo = String(indice);
+            quitar.setAttribute('aria-label', `Quitar ${archivo.name}`);
+            quitar.innerHTML = '<i class="ri-close-line"></i>';
+
+            if (archivo.type.startsWith('image/')) {
+                const imagen = document.createElement('img');
+                const url = URL.createObjectURL(archivo);
+                urlsPrevisualizacion.push(url);
+                imagen.src = url;
+                imagen.alt = `Vista previa de ${archivo.name}`;
+                visual.appendChild(imagen);
+            } else {
+                visual.innerHTML = '<i class="ri-file-pdf-2-line"></i>';
+            }
+
+            datos.append(nombre, detalle);
+            tarjeta.append(visual, datos, quitar);
+            previsualizacionArchivos.appendChild(tarjeta);
+        });
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA VALIDAR LOS ARCHIVOS EN EL MOMENTO DE SELECCIONARLOS
+    ------------------------------------------------------------- */
+
+    function manejarSeleccionArchivos() {
+        const archivos = Array.from(archivosActividadInput.files);
+        const formatos = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+        let mensajeError = '';
+
+        if (archivos.length > 5) {
+            mensajeError = 'Puedes seleccionar un máximo de cinco archivos.';
+        } else if (archivos.some((archivo) => archivo.size > 10 * 1024 * 1024)) {
+            mensajeError = 'Cada archivo debe pesar como máximo 10 MB.';
+        } else if (archivos.some((archivo) => !formatos.includes(archivo.type))) {
+            mensajeError = 'Solo se permiten archivos PDF, JPG, PNG o WEBP.';
+        }
+
+        if (mensajeError) {
+            archivosActividadInput.value = '';
+            renderizarPrevisualizacionArchivos();
+            api.mostrarMensaje(mensajeActividad, mensajeError, 'error');
+            return;
+        }
+
+        api.ocultarMensaje(mensajeActividad);
+        renderizarPrevisualizacionArchivos();
     }
 
     /* -------------------------------------------------------------
@@ -271,6 +379,9 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
 
     function abrirNuevaActividad() {
         document.getElementById('form-actividad').reset();
+        liberarPrevisualizaciones();
+        previsualizacionArchivos.replaceChildren();
+        previsualizacionArchivos.classList.add('hidden');
         rubricasEditor.replaceChildren();
         const inicio = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         document.getElementById('actividad-inicio').value = inicio;
@@ -309,9 +420,14 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
 
     async function guardarActividad(evento) {
         evento.preventDefault();
-        const archivos = Array.from(document.getElementById('actividad-archivos').files);
+        const archivos = Array.from(archivosActividadInput.files);
+        const formatosPermitidos = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
         if (archivos.length > 5 || archivos.some((archivo) => archivo.size > 10 * 1024 * 1024)) {
             api.mostrarMensaje(mensajeActividad, 'Utiliza máximo cinco archivos de hasta 10 MB cada uno.', 'error');
+            return;
+        }
+        if (archivos.some((archivo) => !formatosPermitidos.includes(archivo.type))) {
+            api.mostrarMensaje(mensajeActividad, 'Solo se permiten archivos PDF, JPG, PNG o WEBP.', 'error');
             return;
         }
         const datos = new FormData();
@@ -323,14 +439,23 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
         datos.append('valor_maximo', document.getElementById('actividad-valor').value);
         datos.append('rubricas', JSON.stringify(obtenerRubricasEditor()));
         archivos.forEach((archivo) => datos.append('archivos', archivo));
+        const contenidoOriginalBoton = guardarActividadBoton.innerHTML;
+        guardarActividadBoton.disabled = true;
+        guardarActividadBoton.innerHTML = '<i class="ri-loader-4-line rotating-icon"></i> Guardando...';
+        api.ocultarMensaje(mensajeActividad);
+
         try {
             const { response, resultado } = await api.solicitarApi(`/cursos/${cursoSeleccionado.id}/actividades`, { method: 'POST', body: datos });
             if (!response.ok) throw new Error(resultado.mensaje || 'No fue posible guardar la actividad');
             alternarModal(modalActividad, false);
+            liberarPrevisualizaciones();
             await abrirDetalleCurso(cursoSeleccionado.id);
             api.mostrarMensaje(mensajeDetalle, resultado.mensaje, 'success');
         } catch (error) {
             api.mostrarMensaje(mensajeActividad, error.message, 'error');
+        } finally {
+            guardarActividadBoton.disabled = false;
+            guardarActividadBoton.innerHTML = contenidoOriginalBoton;
         }
     }
 
@@ -489,6 +614,11 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     document.getElementById('agregar-rubrica').addEventListener('click', agregarRubrica);
     rubricasEditor.addEventListener('click', (evento) => evento.target.closest('[data-quitar-rubrica]')?.closest('.rubric-row').remove());
     document.getElementById('form-actividad').addEventListener('submit', guardarActividad);
+    archivosActividadInput.addEventListener('change', manejarSeleccionArchivos);
+    previsualizacionArchivos.addEventListener('click', (evento) => {
+        const boton = evento.target.closest('[data-quitar-archivo]');
+        if (boton) quitarArchivoSeleccionado(Number(boton.dataset.quitarArchivo));
+    });
     unidadesContenedor.addEventListener('click', (evento) => { const boton = evento.target.closest('[data-actividad-id]'); if (boton) abrirDetalleActividad(boton.dataset.actividadId); });
     tablaAlumnos.addEventListener('click', (evento) => { const boton = evento.target.closest('[data-calificar-alumno]'); if (boton) abrirCalificacion(boton.dataset.calificarAlumno); });
     document.getElementById('form-calificar').addEventListener('submit', guardarCalificacion);

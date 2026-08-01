@@ -5,6 +5,7 @@ DEFINICION DE VARIABLES Y TEMAS
 ------------------------------------------------------------- */
 
 :root {
+    color-scheme: light;
     --fondo-color: #F1F5F9;
     --superficie-color: #FFFFFF;
     --superficie-secundaria: #F8FAFC;
@@ -21,6 +22,7 @@ DEFINICION DE VARIABLES Y TEMAS
 }
 
 [theme="dark"] {
+    color-scheme: dark;
     --fondo-color: #0F172A;
     --superficie-color: #172033;
     --superficie-secundaria: #111827;
@@ -170,6 +172,7 @@ CABECERA Y NAVEGACION
 
 .header-actions {
     display: flex;
+    flex: 0 0 auto;
     gap: 6px;
 }
 
@@ -712,6 +715,19 @@ DISEÑO RESPONSIVO
         padding-bottom: 2px;
     }
 
+    .brand {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .header-actions {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        position: relative;
+        z-index: 2;
+    }
+
     .profile-content {
         grid-template-columns: 1fr;
     }
@@ -808,6 +824,7 @@ DISEÑO RESPONSIVO
 
 @media screen and (max-width: 620px) {
     .app-header {
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 10px;
         padding: 10px 14px;
     }
@@ -822,6 +839,25 @@ DISEÑO RESPONSIVO
 
     .navigation-button span {
         display: none;
+    }
+
+    .header-actions {
+        display: flex !important;
+        min-width: 90px;
+    }
+
+    .header-actions .icon-button {
+        display: inline-flex !important;
+        flex: 0 0 40px;
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--borde-color);
+        background: var(--superficie-secundaria);
+        color: var(--texto-color);
+    }
+
+    .header-actions .logout {
+        color: var(--error-color);
     }
 
     .dashboard-main {
@@ -863,6 +899,7 @@ DISEÑO RESPONSIVO
 
     .setup-modal {
         max-height: calc(100vh - 20px);
+        padding: 20px 16px;
         border-radius: 18px;
     }
 }
