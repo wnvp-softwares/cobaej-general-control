@@ -10,6 +10,8 @@
     </script>
     <title>SiCECOBAEJ 65 - Dashboard</title>
     <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/cursos.css">
+    <link rel="stylesheet" href="../styles/calificaciones.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 
@@ -36,6 +38,14 @@
             <button class="navigation-button" type="button" data-vista="alumnos">
                 <i class="ri-graduation-cap-line"></i>
                 <span>Alumnos</span>
+            </button>
+            <button class="navigation-button" type="button" data-vista="cursos">
+                <i class="ri-book-open-line"></i>
+                <span>Cursos</span>
+            </button>
+            <button class="navigation-button" type="button" data-vista="calificaciones">
+                <i class="ri-bar-chart-box-line"></i>
+                <span>Calificaciones</span>
             </button>
             <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
                 <i class="ri-calendar-line"></i>
@@ -156,97 +166,6 @@
                     </button>
                 </div>
             </form>
-        </section>
-
-        <section class="content-card view-section hidden" id="vista-perfil-publico" aria-labelledby="perfil-publico-title">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Directorio académico</p>
-                    <h1 id="perfil-publico-title">Perfil</h1>
-                    <p id="perfil-publico-descripcion">Información permitida del usuario seleccionado.</p>
-                </div>
-
-                <button class="secondary-button" id="volver-perfil-publico" type="button">
-                    <i class="ri-arrow-left-line"></i>
-                    Regresar
-                </button>
-            </div>
-
-            <div class="app-message hidden" id="mensaje-perfil-publico" role="status" aria-live="polite"></div>
-
-            <div class="profile-content public-profile-content">
-                <div class="avatar-column">
-                    <div class="avatar-frame">
-                        <img id="imagen-perfil-publico" src="../public/user-default-icon.png" alt="Imagen del perfil consultado">
-                    </div>
-                </div>
-
-                <div class="profile-fields">
-                    <div class="field-group">
-                        <label for="nombre-perfil-publico">Nombre completo</label>
-                        <div class="input-wrapper readonly">
-                            <i class="ri-user-line"></i>
-                            <input id="nombre-perfil-publico" type="text" disabled>
-                        </div>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="rol-perfil-publico">Tipo de cuenta</label>
-                        <div class="input-wrapper readonly">
-                            <i class="ri-shield-user-line"></i>
-                            <input id="rol-perfil-publico" type="text" disabled>
-                        </div>
-                    </div>
-
-                    <div class="field-group hidden" id="campo-correo-perfil-publico">
-                        <label for="correo-perfil-publico">Correo</label>
-                        <div class="input-wrapper readonly">
-                            <i class="ri-mail-line"></i>
-                            <input id="correo-perfil-publico" type="text" disabled>
-                        </div>
-                    </div>
-
-                    <div class="field-group hidden" id="campo-horas-perfil-publico">
-                        <label for="horas-perfil-publico">Horas disponibles</label>
-                        <div class="input-wrapper readonly">
-                            <i class="ri-time-line"></i>
-                            <input id="horas-perfil-publico" type="text" disabled>
-                        </div>
-                    </div>
-
-                    <div class="field-group hidden" id="campo-ciclo-perfil-publico">
-                        <label for="ciclo-perfil-publico">Ciclo de ingreso</label>
-                        <div class="input-wrapper readonly">
-                            <i class="ri-calendar-check-line"></i>
-                            <input id="ciclo-perfil-publico" type="text" disabled>
-                        </div>
-                    </div>
-
-                    <div class="field-group hidden" id="campo-control-perfil-publico">
-                        <label for="control-perfil-publico">Número de control</label>
-                        <div class="input-wrapper readonly">
-                            <i class="ri-id-card-line"></i>
-                            <input id="control-perfil-publico" type="text" disabled>
-                        </div>
-                    </div>
-
-                    <div class="field-group hidden" id="campo-semestre-perfil-publico">
-                        <label for="semestre-perfil-publico">Semestre actual</label>
-                        <div class="input-wrapper readonly">
-                            <i class="ri-numbers-line"></i>
-                            <input id="semestre-perfil-publico" type="text" disabled>
-                        </div>
-                    </div>
-
-                    <div class="field-group hidden" id="campo-grupo-perfil-publico">
-                        <label for="grupo-perfil-publico">Grupo actual</label>
-                        <div class="input-wrapper readonly">
-                            <i class="ri-team-line"></i>
-                            <input id="grupo-perfil-publico" type="text" disabled>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </section>
 
         <section class="content-card view-section hidden" id="vista-docentes" aria-labelledby="docentes-title">
@@ -414,40 +333,117 @@
                 </button>
             </div>
         </section>
-    </main>
 
-    <div class="modal-backdrop hidden" id="modal-recorte" role="dialog" aria-modal="true" aria-labelledby="recorte-title">
-        <section class="crop-modal">
-            <div class="crop-heading">
+        <section class="content-card view-section hidden" id="vista-cursos" aria-labelledby="cursos-title">
+            <div class="section-heading">
                 <div>
-                    <p class="eyebrow">Imagen de perfil</p>
-                    <h2 id="recorte-title">Ajusta el recorte</h2>
+                    <p class="eyebrow">Aulas académicas</p>
+                    <h1 id="cursos-title">Cursos</h1>
+                    <p>Materias abiertas para un grupo y periodo escolar.</p>
                 </div>
-                <button class="icon-button" id="cerrar-recorte" type="button" aria-label="Cancelar recorte">
-                    <i class="ri-close-line"></i>
+                <button class="primary-button hidden" id="nuevo-curso" type="button">
+                    <i class="ri-add-line"></i> Nuevo curso
                 </button>
             </div>
-
-            <p class="crop-help">Arrastra la imagen con el dedo o el mouse. El área visible se guardará en formato cuadrado.</p>
-
-            <div class="crop-stage">
-                <canvas id="lienzo-recorte" width="360" height="360" aria-label="Vista previa del recorte cuadrado"></canvas>
-                <div class="crop-grid" aria-hidden="true"></div>
+            <div class="app-message hidden" id="mensaje-cursos" role="status" aria-live="polite"></div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Materia</th><th>Grupo</th><th>Periodo</th><th>Docentes</th><th>Estado</th></tr></thead>
+                    <tbody id="tabla-cursos"></tbody>
+                </table>
             </div>
-
-            <label class="zoom-control" for="zoom-recorte">
-                <span><i class="ri-zoom-in-line"></i> Acercamiento</span>
-                <input id="zoom-recorte" type="range" min="1" max="3" step="0.01" value="1">
-            </label>
-
-            <div class="form-actions compact">
-                <button class="secondary-button" id="cancelar-recorte" type="button">Cancelar</button>
-                <button class="primary-button" id="aplicar-recorte" type="button">
-                    <i class="ri-crop-line"></i>
-                    Aplicar recorte
-                </button>
+            <div class="pagination" id="paginacion-cursos">
+                <button class="secondary-button" type="button" data-accion="anterior"><i class="ri-arrow-left-s-line"></i> Anterior</button>
+                <span data-resumen>Página 1 de 1</span>
+                <button class="secondary-button" type="button" data-accion="siguiente">Siguiente <i class="ri-arrow-right-s-line"></i></button>
             </div>
         </section>
+
+        <section class="content-card view-section hidden" id="vista-curso-detalle" aria-labelledby="curso-detalle-title">
+            <div class="section-heading">
+                <div>
+                    <button class="text-button" id="volver-cursos" type="button"><i class="ri-arrow-left-line"></i> Volver a cursos</button>
+                    <p class="eyebrow">Curso activo</p>
+                    <h1 id="curso-detalle-title">Curso</h1>
+                    <p id="curso-detalle-meta"></p>
+                </div>
+                <button class="primary-button hidden" id="nueva-actividad" type="button"><i class="ri-add-line"></i> Nueva actividad</button>
+            </div>
+            <div class="app-message hidden" id="mensaje-curso-detalle" role="status" aria-live="polite"></div>
+            <div id="unidades-curso" class="units-grid"></div>
+            <section class="enrolled-section hidden" id="alumnos-curso-seccion">
+                <h2>Alumnos inscritos</h2>
+                <div class="table-wrapper"><table><thead><tr><th>Nombre</th><th>Número de control</th><th>Unidad 1</th><th>Unidad 2</th><th>Unidad 3</th><th>General</th><th>Acciones</th></tr></thead><tbody id="tabla-alumnos-curso"></tbody></table></div>
+            </section>
+        </section>
+
+        <section class="content-card view-section hidden" id="vista-calificaciones" aria-labelledby="calificaciones-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Historial académico</p>
+                    <h1 id="calificaciones-title">Calificaciones</h1>
+                    <p>Resultados por unidad y promedio general normalizado sobre 100.</p>
+                </div>
+            </div>
+            <div class="app-message hidden" id="mensaje-calificaciones" role="status" aria-live="polite"></div>
+            <div class="kardex-toolbar hidden" id="selector-kardex-docente">
+                <label for="alumno-kardex">Alumno</label>
+                <select class="standard-input" id="alumno-kardex"><option value="">Selecciona un alumno</option></select>
+            </div>
+            <div class="student-summary hidden" id="resumen-alumno-kardex"></div>
+            <div class="kardex-toolbar hidden" id="acciones-kardex">
+                <button class="secondary-button" type="button" data-exportar="pdf"><i class="ri-file-pdf-2-line"></i> PDF</button>
+                <button class="secondary-button" type="button" data-exportar="png"><i class="ri-image-line"></i> PNG</button>
+                <button class="secondary-button" type="button" data-exportar="jpg"><i class="ri-image-2-line"></i> JPG</button>
+            </div>
+            <div class="table-wrapper"><table><thead><tr><th>Periodo</th><th>Materia</th><th>Semestre y grupo</th><th>Unidad 1</th><th>Unidad 2</th><th>Unidad 3</th><th>General</th></tr></thead><tbody id="tabla-kardex"></tbody></table></div>
+        </section>
+    </main>
+
+    <div class="modal-backdrop hidden" id="modal-curso" role="dialog" aria-modal="true" aria-labelledby="modal-curso-title">
+        <section class="setup-modal compact-modal">
+            <div class="modal-heading"><div><p class="eyebrow">Configuración rápida</p><h2 id="modal-curso-title">Nuevo curso</h2></div><button class="icon-button" type="button" data-cerrar-modal="curso"><i class="ri-close-line"></i></button></div>
+            <div class="app-message hidden" id="mensaje-modal-curso"></div>
+            <form id="form-curso">
+                <div class="setup-grid">
+                    <div class="field-group"><label for="curso-materia">Materia</label><select class="standard-input" id="curso-materia" required></select></div>
+                    <div class="field-group"><label for="curso-grupo">Grupo compatible</label><select class="standard-input" id="curso-grupo" required></select></div>
+                </div>
+                <div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="curso">Cancelar</button><button class="primary-button" type="submit">Crear curso</button></div>
+            </form>
+        </section>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-inscripcion" role="dialog" aria-modal="true" aria-labelledby="modal-inscripcion-title">
+        <section class="setup-modal compact-modal"><div class="setup-icon"><i class="ri-login-circle-line"></i></div><h2 id="modal-inscripcion-title">Inscribirse a la materia</h2><p id="texto-inscripcion"></p><div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="inscripcion">Cancelar</button><button class="primary-button" id="confirmar-inscripcion" type="button">Inscribirme</button></div></section>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-actividad" role="dialog" aria-modal="true" aria-labelledby="modal-actividad-title">
+        <section class="setup-modal activity-modal">
+            <div class="modal-heading"><div><p class="eyebrow">Planeación</p><h2 id="modal-actividad-title">Nueva actividad</h2></div><button class="icon-button" type="button" data-cerrar-modal="actividad"><i class="ri-close-line"></i></button></div>
+            <div class="app-message hidden" id="mensaje-modal-actividad"></div>
+            <form id="form-actividad">
+                <div class="activity-form-grid">
+                    <div class="field-group"><label for="actividad-unidad">Unidad</label><select class="standard-input" id="actividad-unidad" required></select></div>
+                    <div class="field-group"><label for="actividad-nombre">Nombre</label><input class="standard-input" id="actividad-nombre" maxlength="150" required></div>
+                    <div class="field-group full-field"><label for="actividad-descripcion">Descripción</label><textarea class="standard-input" id="actividad-descripcion" rows="3"></textarea></div>
+                    <div class="field-group"><label for="actividad-inicio">Fecha de inicio</label><input class="standard-input" id="actividad-inicio" type="datetime-local" required></div>
+                    <div class="field-group"><label for="actividad-cierre">Fecha de cierre</label><input class="standard-input" id="actividad-cierre" type="datetime-local" required></div>
+                    <div class="field-group"><label for="actividad-valor">Valor máximo</label><input class="standard-input" id="actividad-valor" type="number" min="0.01" step="0.01" required></div>
+                    <div class="field-group"><label for="actividad-archivos">Materiales (máximo 5)</label><input class="standard-input" id="actividad-archivos" type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp"></div>
+                </div>
+                <div class="rubric-editor"><div class="editor-heading"><h3>Rúbricas individuales</h3><button class="secondary-button" id="agregar-rubrica" type="button"><i class="ri-add-line"></i> Agregar criterio</button></div><div id="rubricas-editor"></div></div>
+                <div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="actividad">Cancelar</button><button class="primary-button" type="submit">Guardar actividad</button></div>
+            </form>
+        </section>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-detalle-actividad" role="dialog" aria-modal="true" aria-labelledby="detalle-actividad-title">
+        <section class="setup-modal activity-modal"><div class="modal-heading"><div><p class="eyebrow" id="detalle-actividad-unidad"></p><h2 id="detalle-actividad-title">Actividad</h2></div><button class="icon-button" type="button" data-cerrar-modal="detalle-actividad"><i class="ri-close-line"></i></button></div><div id="detalle-actividad-contenido"></div><div class="form-actions compact"><button class="primary-button" type="button" data-cerrar-modal="detalle-actividad">Cerrar</button></div></section>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-calificar" role="dialog" aria-modal="true" aria-labelledby="modal-calificar-title">
+        <section class="setup-modal compact-modal"><div class="modal-heading"><h2 id="modal-calificar-title">Calificar actividad</h2><button class="icon-button" type="button" data-cerrar-modal="calificar"><i class="ri-close-line"></i></button></div><form id="form-calificar"><div class="field-group"><label for="calificacion-puntos">Puntos obtenidos</label><input class="standard-input" id="calificacion-puntos" type="number" min="0" step="0.01" required></div><div id="rubricas-calificacion"></div><div class="field-group"><label for="calificacion-observaciones">Observaciones</label><textarea class="standard-input" id="calificacion-observaciones" rows="3"></textarea></div><div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="calificar">Cancelar</button><button class="primary-button" type="submit">Guardar calificación</button></div></form></section>
     </div>
 
     <div class="modal-backdrop hidden" id="modal-configuracion" role="dialog" aria-modal="true" aria-labelledby="configuracion-title">
@@ -491,8 +487,10 @@
         </section>
     </div>
 
-    <script src="../scripts/profile-cropper.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
     <script src="../scripts/dashboard.js"></script>
+    <script src="../scripts/cursos.js"></script>
+    <script src="../scripts/calificaciones.js"></script>
 </body>
 
 </html>
