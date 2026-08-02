@@ -12,6 +12,20 @@ ESTILOS PARA CURSOS, UNIDADES, ACTIVIDADES Y CAPTURA DOCENTE
     cursor: pointer;
 }
 
+.course-link {
+    display: block;
+    width: 100%;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+#tabla-cursos td:first-child,
+#tabla-materias td:first-child,
+#tabla-cursos th:first-child,
+#tabla-materias th:first-child {
+    text-align: left;
+}
+
 .text-button {
     display: inline-flex;
     align-items: center;

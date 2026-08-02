@@ -471,10 +471,30 @@
                 </div>
             </div>
 
+            <div class="schedule-action-bar">
+                <div class="schedule-edit-actions hidden" id="acciones-edicion-horario">
+                    <button class="primary-button" id="editar-horario" type="button">
+                        <i class="ri-edit-line"></i> Editar horario
+                    </button>
+                    <button class="secondary-button hidden" id="cancelar-edicion-horario" type="button">
+                        <i class="ri-close-line"></i> Cancelar
+                    </button>
+                    <button class="primary-button hidden" id="guardar-horario" type="button">
+                        <i class="ri-save-line"></i> Guardar horario
+                    </button>
+                </div>
+                <div class="schedule-export-actions hidden" id="acciones-exportacion-horario">
+                    <span>Exportar tabla</span>
+                    <button class="secondary-button" type="button" data-exportar-horario="pdf"><i class="ri-file-pdf-2-line"></i> PDF</button>
+                    <button class="secondary-button" type="button" data-exportar-horario="png"><i class="ri-image-line"></i> PNG</button>
+                    <button class="secondary-button" type="button" data-exportar-horario="jpg"><i class="ri-image-2-line"></i> JPG</button>
+                </div>
+            </div>
+
             <div class="schedule-counters hidden" id="contadores-horario">
                 <div><small>Docente</small><strong id="contador-docente-horario">0 de 0 horas</strong></div>
                 <div><small>Materia en este grupo</small><strong id="contador-materia-horario">0 de 0 horas</strong></div>
-                <p><i class="ri-information-line"></i> Selecciona una relación y pulsa una celda libre para asignarla.</p>
+                <p><i class="ri-information-line"></i> Los cambios permanecen en pantalla hasta pulsar Guardar horario.</p>
             </div>
 
             <div class="schedule-table-wrapper" id="contenedor-tabla-horario"></div>

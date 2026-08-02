@@ -116,6 +116,37 @@ ESTILOS PARA CICLO ACTIVO, MODULOS Y HORARIOS GENERALES
     max-width: 390px;
 }
 
+.schedule-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.schedule-edit-actions,
+.schedule-export-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.schedule-export-actions {
+    margin-left: auto;
+}
+
+.schedule-export-actions > span {
+    color: var(--texto-secundario);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.schedule-export-actions .secondary-button {
+    min-height: 38px;
+    padding: 0 12px;
+}
+
 .schedule-counters {
     display: grid;
     grid-template-columns: repeat(2, minmax(150px, 220px)) minmax(250px, 1fr);
@@ -212,6 +243,19 @@ ESTILOS PARA CICLO ACTIVO, MODULOS Y HORARIOS GENERALES
 
 .schedule-slot.occupied {
     box-shadow: inset 4px 0 var(--subject-color, var(--items-color));
+}
+
+.schedule-table-wrapper.editing .schedule-slot {
+    transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+}
+
+.schedule-table-wrapper.editing .schedule-slot.pending-add {
+    background: color-mix(in srgb, var(--success-color) 8%, var(--superficie-color));
+    box-shadow: inset 4px 0 var(--subject-color, var(--success-color));
+}
+
+.schedule-table-wrapper.editing .schedule-slot-button:hover:not(:disabled) {
+    transform: translateY(-1px);
 }
 
 .schedule-class {
@@ -317,9 +361,26 @@ ESTILOS PARA CICLO ACTIVO, MODULOS Y HORARIOS GENERALES
 @media screen and (max-width: 720px) {
     .schedule-panel-heading,
     .active-period-control,
-    .schedule-toolbar {
+    .schedule-toolbar,
+    .schedule-action-bar {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .schedule-export-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .schedule-export-actions > span {
+        grid-column: 1 / -1;
+    }
+
+    .schedule-edit-actions,
+    .schedule-edit-actions button {
+        width: 100%;
     }
 
     .schedule-toolbar .field-group {

@@ -197,7 +197,7 @@ CONTENEDORES DE LAS VISTAS
 ------------------------------------------------------------- */
 
 .dashboard-main {
-    width: min(1180px, calc(100% - 32px));
+    width: min(1560px, calc(100% - 40px));
     margin: 0 auto;
     padding: clamp(24px, 4vw, 48px) 0;
 }
