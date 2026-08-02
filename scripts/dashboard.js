@@ -60,6 +60,15 @@ const grupoSeleccionadoSelect = document.getElementById('grupo-seleccionado');
 const mensajeConfiguracion = document.getElementById('mensaje-configuracion');
 const guardarConfiguracionBtn = document.getElementById('guardar-configuracion');
 const salirConfiguracionBtn = document.getElementById('salir-configuracion');
+const modalPerfilDirectorio = document.getElementById('modal-perfil-directorio');
+const perfilDirectorioImagen = document.getElementById('perfil-directorio-imagen');
+const perfilDirectorioNombre = document.getElementById('perfil-directorio-nombre');
+const perfilDirectorioRol = document.getElementById('perfil-directorio-rol');
+const perfilDirectorioDatos = document.getElementById('perfil-directorio-datos');
+const mensajePerfilDirectorio = document.getElementById('mensaje-perfil-directorio');
+const controlesCerrarPerfilDirectorio = Array.from(
+    document.querySelectorAll('[data-cerrar-perfil-directorio]')
+);
 
 /* -------------------------------------------------------------
 VARIABLES GLOBALES
@@ -434,6 +443,23 @@ function crearCelda(valor, etiqueta, clase = '') {
 }
 
 /* -------------------------------------------------------------
+METODO PARA CREAR UNA CELDA CON ENLACE AL PERFIL DEL DIRECTORIO
+------------------------------------------------------------- */
+
+function crearCeldaPerfil(usuario, tipo) {
+    const celda = document.createElement('td');
+    const enlace = document.createElement('a');
+    celda.dataset.label = 'Nombre';
+    enlace.className = 'directory-profile-link';
+    enlace.href = `#perfil-${tipo}-${usuario.id}`;
+    enlace.dataset.perfilId = usuario.id;
+    enlace.dataset.perfilTipo = tipo;
+    enlace.textContent = usuario.nombre;
+    celda.appendChild(enlace);
+    return celda;
+}
+
+/* -------------------------------------------------------------
 METODO PARA MOSTRAR UN ESTADO VACIO DENTRO DE UNA TABLA
 ------------------------------------------------------------- */
 
@@ -480,7 +506,7 @@ function renderizarDocentes(docentes) {
 
     docentes.forEach((docente) => {
         const fila = document.createElement('tr');
-        fila.appendChild(crearCelda(docente.nombre, 'Nombre'));
+        fila.appendChild(crearCeldaPerfil(docente, 'docente'));
         fila.appendChild(crearCelda(docente.correo, 'Correo'));
         fila.appendChild(crearCelda(
             String(docente.horas_disponibles),
@@ -643,7 +669,7 @@ function renderizarAlumnos(alumnos) {
         const correo = alumno.correo || 'Privado';
         const claseCorreo = alumno.correo ? '' : 'private-value';
 
-        fila.appendChild(crearCelda(alumno.nombre, 'Nombre'));
+        fila.appendChild(crearCeldaPerfil(alumno, 'alumno'));
         fila.appendChild(crearCelda(correo, 'Correo', claseCorreo));
         fila.appendChild(crearCelda(alumno.ciclo_ingreso, 'Ciclo de ingreso'));
         fila.appendChild(crearCelda(
@@ -856,6 +882,82 @@ function manejarEdicionMateria(evento) {
 }
 
 /* -------------------------------------------------------------
+METODO PARA AGREGAR UN DATO SEGURO AL PERFIL DEL DIRECTORIO
+------------------------------------------------------------- */
+
+function agregarDatoPerfilDirectorio(etiqueta, valor) {
+    if (valor === null || valor === undefined || valor === '') return;
+    const bloque = document.createElement('div');
+    const titulo = document.createElement('small');
+    const contenido = document.createElement('strong');
+    titulo.textContent = etiqueta;
+    contenido.textContent = valor;
+    bloque.append(titulo, contenido);
+    perfilDirectorioDatos.appendChild(bloque);
+}
+
+/* -------------------------------------------------------------
+METODO PARA RENDERIZAR EL PERFIL CONSULTADO DESDE UN LISTADO
+------------------------------------------------------------- */
+
+function renderizarPerfilDirectorio(usuario) {
+    perfilDirectorioImagen.src = usuario.imagen || IMAGEN_PREDETERMINADA;
+    perfilDirectorioNombre.textContent = usuario.nombre || 'Perfil';
+    perfilDirectorioRol.textContent = usuario.tipo === 'docente' ? 'Docente' : 'Alumno';
+    perfilDirectorioDatos.replaceChildren();
+    agregarDatoPerfilDirectorio('Correo', usuario.correo || 'Privado');
+    if (usuario.tipo === 'docente') {
+        agregarDatoPerfilDirectorio('Horas disponibles', String(usuario.horas_disponibles ?? 0));
+    } else {
+        agregarDatoPerfilDirectorio('Número de control', usuario.numero_control || 'Privado');
+        agregarDatoPerfilDirectorio('Ciclo de ingreso', usuario.ciclo_ingreso || 'Pendiente');
+        agregarDatoPerfilDirectorio('Semestre actual', formatearSemestre(usuario.semestre_actual));
+        agregarDatoPerfilDirectorio('Grupo actual', usuario.grupo_actual || 'Pendiente');
+    }
+}
+
+/* -------------------------------------------------------------
+METODO PARA ABRIR Y CONSULTAR UN PERFIL DESDE SU ENLACE
+------------------------------------------------------------- */
+
+async function abrirPerfilDirectorio(tipo, id) {
+    modalPerfilDirectorio.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    perfilDirectorioDatos.replaceChildren();
+    perfilDirectorioNombre.textContent = 'Cargando perfil...';
+    perfilDirectorioRol.textContent = '';
+    perfilDirectorioImagen.src = IMAGEN_PREDETERMINADA;
+    ocultarMensaje(mensajePerfilDirectorio);
+    try {
+        const { response, resultado } = await solicitarApi(`/perfil/${tipo}s/${id}`);
+        if (!response.ok) throw new Error(resultado.mensaje || 'No fue posible consultar el perfil');
+        renderizarPerfilDirectorio(resultado.usuario);
+    } catch (error) {
+        mostrarMensaje(mensajePerfilDirectorio, error.message, 'error');
+    }
+}
+
+/* -------------------------------------------------------------
+METODO PARA PROCESAR LOS ENLACES DE PERFIL DE DOCENTES Y ALUMNOS
+------------------------------------------------------------- */
+
+function manejarEnlacePerfil(evento) {
+    const enlace = evento.target.closest('[data-perfil-id][data-perfil-tipo]');
+    if (!enlace) return;
+    evento.preventDefault();
+    abrirPerfilDirectorio(enlace.dataset.perfilTipo, enlace.dataset.perfilId);
+}
+
+/* -------------------------------------------------------------
+METODO PARA CERRAR EL PERFIL CONSULTADO DESDE EL DIRECTORIO
+------------------------------------------------------------- */
+
+function cerrarPerfilDirectorio() {
+    modalPerfilDirectorio.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+}
+
+/* -------------------------------------------------------------
 METODO PARA CARGAR LA VISTA SELECCIONADA
 ------------------------------------------------------------- */
 
@@ -878,6 +980,10 @@ function cargarVista(nombreVista) {
 
     if (nombreVista === 'calificaciones') {
         window.CalificacionesDashboard?.cargar();
+    }
+
+    if (nombreVista === 'horarios') {
+        window.HorariosDashboard?.cargar();
     }
 }
 
@@ -1113,6 +1219,11 @@ cancelarMateriaBtn.addEventListener('click', cerrarEditorMateria);
 descartarMateriaBtn.addEventListener('click', cerrarEditorMateria);
 formMateria.addEventListener('submit', guardarMateria);
 tablaMaterias.addEventListener('click', manejarEdicionMateria);
+tablaDocentes.addEventListener('click', manejarEnlacePerfil);
+tablaAlumnos.addEventListener('click', manejarEnlacePerfil);
+controlesCerrarPerfilDirectorio.forEach((control) => {
+    control.addEventListener('click', cerrarPerfilDirectorio);
+});
 periodoIngresoSelect.addEventListener('change', actualizarGruposConfiguracion);
 formConfiguracion.addEventListener('submit', guardarConfiguracionInicial);
 salirConfiguracionBtn.addEventListener('click', cerrarSesion);

@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../styles/dashboard.css">
     <link rel="stylesheet" href="../styles/cursos.css">
     <link rel="stylesheet" href="../styles/calificaciones.css">
+    <link rel="stylesheet" href="../styles/horarios.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 
@@ -47,7 +48,7 @@
                 <i class="ri-bar-chart-box-line"></i>
                 <span>Calificaciones</span>
             </button>
-            <button class="navigation-button" type="button" disabled title="Módulo en desarrollo">
+            <button class="navigation-button" type="button" data-vista="horarios">
                 <i class="ri-calendar-line"></i>
                 <span>Horarios</span>
             </button>
@@ -398,7 +399,105 @@
             </div>
             <div class="table-wrapper"><table><thead><tr><th>Periodo</th><th>Materia</th><th>Semestre y grupo</th><th>Unidad 1</th><th>Unidad 2</th><th>Unidad 3</th><th>General</th></tr></thead><tbody id="tabla-kardex"></tbody></table></div>
         </section>
+
+        <section class="content-card view-section hidden" id="vista-horarios" aria-labelledby="horarios-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Planeación semestral</p>
+                    <h1 id="horarios-title">Horarios</h1>
+                    <p>Horario general por grupo, módulos de clase y disponibilidad docente.</p>
+                </div>
+                <span class="active-period-badge" id="periodo-activo-etiqueta">Sin ciclo activo</span>
+            </div>
+
+            <div class="app-message hidden" id="mensaje-horarios" role="status" aria-live="polite"></div>
+
+            <section class="schedule-admin-panel hidden" id="administracion-horarios">
+                <div class="schedule-panel-heading">
+                    <div>
+                        <p class="eyebrow">Control escolar</p>
+                        <h2>Ciclo activo y módulos</h2>
+                    </div>
+                    <button class="secondary-button" id="alternar-configuracion-horarios" type="button">
+                        <i class="ri-settings-3-line"></i> Configurar
+                    </button>
+                </div>
+
+                <div class="schedule-settings hidden" id="configuracion-horarios">
+                    <div class="active-period-control">
+                        <div class="field-group">
+                            <label for="selector-periodo-activo">Ciclo escolar actual</label>
+                            <select class="standard-input" id="selector-periodo-activo"></select>
+                        </div>
+                        <button class="primary-button" id="activar-periodo" type="button">Establecer como activo</button>
+                    </div>
+
+                    <form class="module-editor" id="form-modulo-horario">
+                        <input id="modulo-horario-id" type="hidden">
+                        <div class="field-group">
+                            <label for="modulo-nombre">Nombre del módulo</label>
+                            <input class="standard-input" id="modulo-nombre" maxlength="80" placeholder="Clase 1" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="modulo-inicio">Hora de inicio</label>
+                            <input class="standard-input" id="modulo-inicio" type="time" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="modulo-fin">Hora de cierre</label>
+                            <input class="standard-input" id="modulo-fin" type="time" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="modulo-orden">Orden</label>
+                            <input class="standard-input" id="modulo-orden" type="number" min="1" step="1" required>
+                        </div>
+                        <button class="primary-button" type="submit"><i class="ri-add-line"></i> Guardar módulo</button>
+                    </form>
+                    <div class="module-list" id="lista-modulos-horario"></div>
+                </div>
+            </section>
+
+            <div class="schedule-toolbar">
+                <div class="field-group">
+                    <label for="selector-grupo-horario">Grupo</label>
+                    <select class="standard-input" id="selector-grupo-horario"></select>
+                </div>
+                <div class="field-group hidden" id="campo-asignacion-horario">
+                    <label for="selector-asignacion-horario">Docente y materia</label>
+                    <select class="standard-input" id="selector-asignacion-horario"></select>
+                </div>
+                <div class="field-group hidden" id="campo-aula-horario">
+                    <label for="aula-horario">Aula opcional</label>
+                    <input class="standard-input" id="aula-horario" maxlength="50" placeholder="Aula 1">
+                </div>
+            </div>
+
+            <div class="schedule-counters hidden" id="contadores-horario">
+                <div><small>Docente</small><strong id="contador-docente-horario">0 de 0 horas</strong></div>
+                <div><small>Materia en este grupo</small><strong id="contador-materia-horario">0 de 0 horas</strong></div>
+                <p><i class="ri-information-line"></i> Selecciona una relación y pulsa una celda libre para asignarla.</p>
+            </div>
+
+            <div class="schedule-table-wrapper" id="contenedor-tabla-horario"></div>
+        </section>
     </main>
+
+    <div class="modal-backdrop hidden" id="modal-perfil-directorio" role="dialog" aria-modal="true" aria-labelledby="perfil-directorio-nombre">
+        <section class="setup-modal compact-modal directory-profile-modal">
+            <div class="modal-heading">
+                <div><p class="eyebrow">Perfil del directorio</p><h2 id="perfil-directorio-nombre">Perfil</h2></div>
+                <button class="icon-button" type="button" data-cerrar-perfil-directorio aria-label="Cerrar perfil"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="app-message hidden" id="mensaje-perfil-directorio"></div>
+            <div class="directory-profile-content">
+                <img id="perfil-directorio-imagen" src="../public/user-default-icon.png" alt="Imagen del perfil">
+                <div>
+                    <span class="profile-role-badge" id="perfil-directorio-rol"></span>
+                    <div class="directory-profile-data" id="perfil-directorio-datos"></div>
+                </div>
+            </div>
+            <div class="form-actions compact"><button class="primary-button" type="button" data-cerrar-perfil-directorio>Cerrar</button></div>
+        </section>
+    </div>
 
     <div class="modal-backdrop hidden" id="modal-curso" role="dialog" aria-modal="true" aria-labelledby="modal-curso-title">
         <section class="setup-modal compact-modal">
@@ -409,6 +508,10 @@
                     <div class="field-group"><label for="curso-materia">Materia</label><select class="standard-input" id="curso-materia" required></select></div>
                     <div class="field-group"><label for="curso-grupo">Grupo compatible</label><select class="standard-input" id="curso-grupo" required></select></div>
                 </div>
+                <fieldset class="teacher-selector">
+                    <legend>Docentes que aparecerán en el horario del grupo</legend>
+                    <div class="teacher-options" id="docentes-curso"></div>
+                </fieldset>
                 <div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="curso">Cancelar</button><button class="primary-button" type="submit">Crear curso</button></div>
             </form>
         </section>
@@ -503,6 +606,7 @@
     <script src="../scripts/dashboard.js"></script>
     <script src="../scripts/cursos.js"></script>
     <script src="../scripts/calificaciones.js"></script>
+    <script src="../scripts/horarios.js"></script>
 </body>
 
 </html>

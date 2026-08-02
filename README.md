@@ -12,6 +12,9 @@ Cliente web estático construido con HTML, CSS y JavaScript. Utiliza Remix Icon 
 - Tres unidades por curso, actividades, rúbricas y materiales de apoyo.
 - Captura docente de calificaciones y normalización sobre 100.
 - Kardex parcial o completo con exportación tabular en PDF, PNG y JPG.
+- Ciclo escolar activo, módulos configurables y horarios generales por grupo.
+- Contadores de disponibilidad docente y horas restantes por materia.
+- Perfiles consultables desde los nombres de docentes y alumnos con privacidad por rol.
 
 ## Dependencias de interfaz
 

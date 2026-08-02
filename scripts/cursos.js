@@ -20,6 +20,7 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     const mensajeActividad = document.getElementById('mensaje-modal-actividad');
     const materiaSelect = document.getElementById('curso-materia');
     const grupoSelect = document.getElementById('curso-grupo');
+    const docentesCursoContenedor = document.getElementById('docentes-curso');
     const unidadesContenedor = document.getElementById('unidades-curso');
     const tablaAlumnos = document.getElementById('tabla-alumnos-curso');
     const seccionAlumnos = document.getElementById('alumnos-curso-seccion');
@@ -249,6 +250,45 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
             .filter((grupo) => String(grupo.grado_semestre) === String(materia?.grado_semestre))
             .forEach((grupo) => agregarOpcion(grupoSelect, grupo.id, `${grupo.grado_semestre}${grupo.division}`));
         grupoSelect.disabled = !materia;
+        renderizarDocentesCurso(materia);
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA RENDERIZAR LOS DOCENTES AUTORIZADOS PARA EL CURSO
+    ------------------------------------------------------------- */
+
+    function renderizarDocentesCurso(materia) {
+        docentesCursoContenedor.replaceChildren();
+        if (!materia?.asignaciones?.length) {
+            const aviso = document.createElement('p');
+            aviso.className = 'private-value';
+            aviso.textContent = 'Selecciona una materia para consultar sus docentes.';
+            docentesCursoContenedor.appendChild(aviso);
+            return;
+        }
+        const perfil = api.obtenerPerfil();
+        materia.asignaciones.forEach((asignacion) => {
+            const etiqueta = document.createElement('label');
+            const selector = document.createElement('input');
+            const nombre = document.createElement('span');
+            etiqueta.className = 'teacher-option';
+            selector.type = 'checkbox';
+            selector.value = asignacion.docente_id;
+            selector.checked = String(asignacion.docente_id) === String(perfil?.id);
+            selector.disabled = selector.checked;
+            nombre.textContent = asignacion.docente?.nombre || 'Docente';
+            etiqueta.append(selector, nombre);
+            docentesCursoContenedor.appendChild(etiqueta);
+        });
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA OBTENER LOS DOCENTES SELECCIONADOS PARA EL CURSO
+    ------------------------------------------------------------- */
+
+    function obtenerDocentesCursoSeleccionados() {
+        return Array.from(docentesCursoContenedor.querySelectorAll('input:checked'))
+            .map((selector) => Number(selector.value));
     }
 
     /* -------------------------------------------------------------
@@ -261,7 +301,11 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
             const { response, resultado } = await api.solicitarApi('/cursos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ materia_id: Number(materiaSelect.value), grupo_id: Number(grupoSelect.value) })
+                body: JSON.stringify({
+                    materia_id: Number(materiaSelect.value),
+                    grupo_id: Number(grupoSelect.value),
+                    docentes_ids: obtenerDocentesCursoSeleccionados()
+                })
             });
             if (!response.ok) throw new Error(resultado.mensaje || 'No fue posible crear el curso');
             alternarModal(modalCurso, false);
