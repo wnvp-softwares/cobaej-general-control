@@ -11,7 +11,7 @@ Cliente web estático construido con HTML, CSS y JavaScript. Utiliza Remix Icon 
 - Cursos por materia, grupo y periodo, con inscripción compatible.
 - Tres unidades por curso, actividades, rúbricas y materiales de apoyo.
 - Captura docente de calificaciones y normalización sobre 100.
-- Kardex parcial o completo con exportación PDF, PNG y JPG.
+- Kardex parcial o completo con exportación tabular en PDF, PNG y JPG.
 
 ## Dependencias de interfaz
 

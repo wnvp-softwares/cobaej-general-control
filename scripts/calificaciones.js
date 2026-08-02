@@ -202,24 +202,11 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     }
 
     /* -------------------------------------------------------------
-    METODO PARA CONSTRUIR LAS LINEAS DE TEXTO DE UNA EXPORTACION
+    METODO PARA CONSTRUIR LAS FILAS TABULARES DE UNA EXPORTACION
     ------------------------------------------------------------- */
 
-    function construirLineasExportacion() {
-        const alumno = kardexActual.alumno || {};
-        const lineas = [
-            'SiCECOBAEJ 65 - Kardex académico',
-            `Nombre: ${obtenerTextoDisponible(alumno.nombre)}`,
-            `Correo: ${obtenerTextoDisponible(alumno.correo)}`,
-            `Número de control: ${obtenerTextoDisponible(alumno.numero_control)}`,
-            `Ciclo de ingreso: ${alumno.periodoIngreso?.nombre_ciclo || 'Pendiente'}`,
-            '',
-            'Periodo | Materia | Sem./Grupo | U1 | U2 | U3 | General'
-        ];
-        if (!kardexActual.filas.length) {
-            lineas.push('Sin materias inscritas al momento de generar este documento.');
-        }
-        kardexActual.filas.forEach((fila) => lineas.push([
+    function construirFilasExportacion() {
+        return kardexActual.filas.map((fila) => ([
             obtenerTextoDisponible(fila.periodo),
             obtenerTextoDisponible(fila.materia),
             `${obtenerTextoDisponible(fila.semestre)}° ${obtenerTextoDisponible(fila.grupo)}`,
@@ -227,8 +214,20 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
             formatearCalificacion(fila.unidades[2]),
             formatearCalificacion(fila.unidades[3]),
             formatearCalificacion(fila.general)
-        ].join(' | ')));
-        return lineas;
+        ]));
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA OBTENER EL ESTADO DESCRIPTIVO DEL KARDEX ACTUAL
+    ------------------------------------------------------------- */
+
+    function obtenerEstadoKardex() {
+        const resumen = kardexActual.resumen || {};
+        if (!kardexActual.filas.length) return 'Kardex parcial: todavía no hay materias inscritas.';
+        if (resumen.parcial) {
+            return `Kardex parcial: ${resumen.unidadesCalificadas || 0} de ${resumen.totalUnidades || 0} unidades calificadas.`;
+        }
+        return 'Kardex completo: todas las unidades cuentan con calificación.';
     }
 
     /* -------------------------------------------------------------
@@ -255,6 +254,7 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
 
     function normalizarTextoPdf(texto) {
         return String(texto)
+            .replace(/°/g, 'o')
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/[^\x20-\x7E]/g, '?')
@@ -264,34 +264,154 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     }
 
     /* -------------------------------------------------------------
-    METODO PARA CONSTRUIR UN PDF NATIVO SIN DEPENDENCIAS EXTERNAS
+    METODO PARA RECORTAR TEXTO SEGUN EL ESPACIO DISPONIBLE EN PDF
     ------------------------------------------------------------- */
 
-    function construirPdfNativo(lineas) {
-        const lineasPorPagina = 24;
-        const paginas = [];
-        for (let indice = 0; indice < lineas.length; indice += lineasPorPagina) {
-            paginas.push(lineas.slice(indice, indice + lineasPorPagina));
+    function recortarTextoPdf(texto, limite) {
+        const disponible = obtenerTextoDisponible(texto);
+        return disponible.length > limite
+            ? `${disponible.slice(0, Math.max(1, limite - 3))}...`
+            : disponible;
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA AGREGAR TEXTO POSICIONADO AL CONTENIDO DE UN PDF
+    ------------------------------------------------------------- */
+
+    function agregarTextoPdf(instrucciones, texto, x, y, tamano = 9, negrita = false, color = '0.12 0.16 0.23') {
+        instrucciones.push(
+            `${color} rg`,
+            'BT',
+            `/${negrita ? 'F2' : 'F1'} ${tamano} Tf`,
+            `${x} ${y} Td`,
+            `(${normalizarTextoPdf(texto)}) Tj`,
+            'ET'
+        );
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA DIBUJAR UNA PAGINA TABULAR DEL KARDEX EN PDF
+    ------------------------------------------------------------- */
+
+    function construirContenidoPaginaPdf(filas, paginaActual, totalPaginas) {
+        const alumno = kardexActual.alumno || {};
+        const columnas = [
+            { titulo: 'Periodo', ancho: 128, limite: 21 },
+            { titulo: 'Materia', ancho: 202, limite: 34 },
+            { titulo: 'Sem./Grupo', ancho: 84, limite: 13 },
+            { titulo: 'Unidad 1', ancho: 72, limite: 10 },
+            { titulo: 'Unidad 2', ancho: 72, limite: 10 },
+            { titulo: 'Unidad 3', ancho: 72, limite: 10 },
+            { titulo: 'General', ancho: 90, limite: 12 }
+        ];
+        const instrucciones = [];
+        const margen = 36;
+        const tablaSuperior = 450;
+        const altoEncabezado = 32;
+        const altoFila = 30;
+        const anchoTabla = columnas.reduce((total, columna) => total + columna.ancho, 0);
+        const esParcial = !kardexActual.filas.length || kardexActual.resumen?.parcial;
+
+        agregarTextoPdf(instrucciones, 'SiCECOBAEJ 65 - Kardex academico', margen, 566, 18, true);
+        instrucciones.push(
+            '0.38 0.45 0.96 RG',
+            '2 w',
+            `${margen} 552 m ${margen + anchoTabla} 552 l S`
+        );
+        agregarTextoPdf(instrucciones, `Nombre: ${obtenerTextoDisponible(alumno.nombre)}`, margen, 526, 10, true);
+        agregarTextoPdf(instrucciones, `Correo: ${obtenerTextoDisponible(alumno.correo)}`, margen, 504, 9);
+        agregarTextoPdf(instrucciones, `Numero de control: ${obtenerTextoDisponible(alumno.numero_control)}`, 420, 526, 10, true);
+        agregarTextoPdf(instrucciones, `Ciclo de ingreso: ${alumno.periodoIngreso?.nombre_ciclo || 'Pendiente'}`, 420, 504, 9);
+        agregarTextoPdf(
+            instrucciones,
+            obtenerEstadoKardex(),
+            margen,
+            474,
+            9,
+            true,
+            esParcial ? '0.70 0.35 0.05' : '0.08 0.50 0.28'
+        );
+
+        const encabezadoInferior = tablaSuperior - altoEncabezado;
+        instrucciones.push('0.08 0.13 0.23 rg', `${margen} ${encabezadoInferior} ${anchoTabla} ${altoEncabezado} re f`);
+        let posicionX = margen;
+        columnas.forEach((columna) => {
+            agregarTextoPdf(instrucciones, columna.titulo, posicionX + 6, encabezadoInferior + 11, 8, true, '1 1 1');
+            posicionX += columna.ancho;
+        });
+
+        if (!filas.length) {
+            const inferior = encabezadoInferior - altoFila;
+            instrucciones.push(
+                '0.96 0.97 0.99 rg',
+                `${margen} ${inferior} ${anchoTabla} ${altoFila} re f`,
+                '0.78 0.82 0.88 RG',
+                '0.5 w',
+                `${margen} ${inferior} ${anchoTabla} ${altoFila} re S`
+            );
+            agregarTextoPdf(
+                instrucciones,
+                'Sin materias inscritas al momento de generar este documento.',
+                margen + 12,
+                inferior + 10,
+                9
+            );
         }
-        if (!paginas.length) paginas.push(['Kardex sin información disponible.']);
+        filas.forEach((fila, indiceFila) => {
+            const inferior = encabezadoInferior - ((indiceFila + 1) * altoFila);
+            const colorFondo = indiceFila % 2 === 0 ? '0.96 0.97 0.99' : '1 1 1';
+            instrucciones.push(
+                `${colorFondo} rg`,
+                `${margen} ${inferior} ${anchoTabla} ${altoFila} re f`,
+                '0.78 0.82 0.88 RG',
+                '0.5 w',
+                `${margen} ${inferior} ${anchoTabla} ${altoFila} re S`
+            );
+            posicionX = margen;
+            columnas.forEach((columna, indiceColumna) => {
+                if (indiceColumna > 0) {
+                    instrucciones.push(`${posicionX} ${inferior} m ${posicionX} ${inferior + altoFila} l S`);
+                }
+                agregarTextoPdf(
+                    instrucciones,
+                    recortarTextoPdf(fila[indiceColumna] || '', columna.limite),
+                    posicionX + 6,
+                    inferior + 10,
+                    8,
+                    indiceColumna === columnas.length - 1
+                );
+                posicionX += columna.ancho;
+            });
+        });
+
+        agregarTextoPdf(instrucciones, `Pagina ${paginaActual} de ${totalPaginas}`, 680, 24, 8, false, '0.40 0.45 0.52');
+        return instrucciones.join('\n');
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA CONSTRUIR UN PDF NATIVO TABULAR SIN DEPENDENCIAS EXTERNAS
+    ------------------------------------------------------------- */
+
+    function construirPdfNativo(filas) {
+        const filasPorPagina = 12;
+        const paginas = [];
+        for (let indice = 0; indice < filas.length; indice += filasPorPagina) {
+            paginas.push(filas.slice(indice, indice + filasPorPagina));
+        }
+        if (!paginas.length) paginas.push([]);
 
         const objetos = [];
         const referenciasPaginas = [];
         objetos[1] = '<< /Type /Catalog /Pages 2 0 R >>';
         objetos[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+        objetos[4] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>';
 
         paginas.forEach((pagina, indicePagina) => {
-            const paginaId = 4 + (indicePagina * 2);
+            const paginaId = 5 + (indicePagina * 2);
             const contenidoId = paginaId + 1;
             referenciasPaginas.push(`${paginaId} 0 R`);
-            const instrucciones = ['BT', '/F1 10 Tf', '40 570 Td'];
-            pagina.forEach((linea, indiceLinea) => {
-                if (indiceLinea > 0) instrucciones.push('0 -21 Td');
-                instrucciones.push(`(${normalizarTextoPdf(linea)}) Tj`);
-            });
-            instrucciones.push('ET');
-            const contenido = instrucciones.join('\n');
-            objetos[paginaId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contenidoId} 0 R >>`;
+            const contenido = construirContenidoPaginaPdf(pagina, indicePagina + 1, paginas.length);
+            objetos[paginaId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${contenidoId} 0 R >>`;
             objetos[contenidoId] = `<< /Length ${contenido.length} >>\nstream\n${contenido}\nendstream`;
         });
 
@@ -318,30 +438,161 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     ------------------------------------------------------------- */
 
     function exportarPdf() {
-        const pdf = construirPdfNativo(construirLineasExportacion());
+        const pdf = construirPdfNativo(construirFilasExportacion());
         descargarBlob(pdf, `${obtenerNombreArchivoKardex()}.pdf`);
     }
 
     /* -------------------------------------------------------------
-    METODO PARA DIBUJAR EL KARDEX EN CANVAS Y EXPORTAR PNG O JPG
+    METODO PARA RECORTAR TEXTO SEGUN EL ANCHO DISPONIBLE EN CANVAS
     ------------------------------------------------------------- */
 
-    function exportarImagen(formato) {
-        const lineas = construirLineasExportacion();
+    function recortarTextoCanvas(contexto, texto, anchoMaximo) {
+        const disponible = obtenerTextoDisponible(texto);
+        if (contexto.measureText(disponible).width <= anchoMaximo) return disponible;
+        let recortado = disponible;
+        while (recortado.length > 1 && contexto.measureText(`${recortado}...`).width > anchoMaximo) {
+            recortado = recortado.slice(0, -1);
+        }
+        return `${recortado}...`;
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA DIBUJAR EL KARDEX COMO UNA TABLA ALINEADA EN CANVAS
+    ------------------------------------------------------------- */
+
+    function construirCanvasKardex() {
+        const alumno = kardexActual.alumno || {};
+        const filas = construirFilasExportacion();
+        const columnas = [
+            { titulo: 'PERIODO', ancho: 310 },
+            { titulo: 'MATERIA', ancho: 420 },
+            { titulo: 'SEM./GRUPO', ancho: 190 },
+            { titulo: 'UNIDAD 1', ancho: 160 },
+            { titulo: 'UNIDAD 2', ancho: 160 },
+            { titulo: 'UNIDAD 3', ancho: 160 },
+            { titulo: 'GENERAL', ancho: 190 }
+        ];
         const ancho = 1800;
-        const alto = Math.max(800, 160 + lineas.length * 42);
+        const margen = 105;
+        const tablaSuperior = 330;
+        const altoEncabezado = 70;
+        const altoFila = 72;
+        const filasDibujadas = Math.max(1, filas.length);
+        const alto = Math.max(900, tablaSuperior + altoEncabezado + (filasDibujadas * altoFila) + 110);
+        const anchoTabla = columnas.reduce((total, columna) => total + columna.ancho, 0);
+        const esParcial = !filas.length || kardexActual.resumen?.parcial;
         const canvas = document.createElement('canvas');
         canvas.width = ancho;
         canvas.height = alto;
         const contexto = canvas.getContext('2d');
         contexto.fillStyle = '#ffffff';
         contexto.fillRect(0, 0, ancho, alto);
+
         contexto.fillStyle = '#1e293b';
-        contexto.font = '24px Arial';
-        lineas.forEach((linea, indice) => {
-            contexto.font = indice === 0 ? 'bold 38px Arial' : '24px Arial';
-            contexto.fillText(linea, 60, 70 + indice * 42, ancho - 120);
+        contexto.font = 'bold 52px Arial';
+        contexto.textAlign = 'left';
+        contexto.textBaseline = 'middle';
+        contexto.fillText('SiCECOBAEJ 65 - Kardex académico', margen, 78);
+        contexto.fillStyle = '#6366f1';
+        contexto.fillRect(margen, 118, anchoTabla, 5);
+
+        contexto.fillStyle = '#64748b';
+        contexto.font = '22px Arial';
+        contexto.fillText('NOMBRE', margen, 162);
+        contexto.fillText('CORREO', margen, 220);
+        contexto.fillText('NÚMERO DE CONTROL', 1010, 162);
+        contexto.fillText('CICLO DE INGRESO', 1010, 220);
+        contexto.fillStyle = '#1e293b';
+        contexto.font = 'bold 28px Arial';
+        contexto.fillText(recortarTextoCanvas(contexto, alumno.nombre, 700), margen, 192);
+        contexto.font = '26px Arial';
+        contexto.fillText(recortarTextoCanvas(contexto, alumno.correo, 700), margen, 250);
+        contexto.font = 'bold 28px Arial';
+        contexto.fillText(obtenerTextoDisponible(alumno.numero_control), 1010, 192);
+        contexto.font = '26px Arial';
+        contexto.fillText(alumno.periodoIngreso?.nombre_ciclo || 'Pendiente', 1010, 250);
+
+        contexto.fillStyle = esParcial ? '#fff7ed' : '#ecfdf5';
+        contexto.fillRect(margen, 278, anchoTabla, 42);
+        contexto.fillStyle = esParcial ? '#c2410c' : '#047857';
+        contexto.font = 'bold 21px Arial';
+        contexto.fillText(obtenerEstadoKardex(), margen + 18, 299);
+
+        contexto.fillStyle = '#172033';
+        contexto.fillRect(margen, tablaSuperior, anchoTabla, altoEncabezado);
+        let posicionX = margen;
+        columnas.forEach((columna, indiceColumna) => {
+            contexto.fillStyle = '#ffffff';
+            contexto.font = 'bold 21px Arial';
+            contexto.textAlign = indiceColumna < 2 ? 'left' : 'center';
+            const textoX = indiceColumna < 2
+                ? posicionX + 18
+                : posicionX + (columna.ancho / 2);
+            contexto.fillText(columna.titulo, textoX, tablaSuperior + (altoEncabezado / 2));
+            posicionX += columna.ancho;
         });
+
+        if (!filas.length) {
+            const posicionY = tablaSuperior + altoEncabezado;
+            contexto.fillStyle = '#f8fafc';
+            contexto.fillRect(margen, posicionY, anchoTabla, altoFila);
+            contexto.strokeStyle = '#cbd5e1';
+            contexto.lineWidth = 2;
+            contexto.strokeRect(margen, posicionY, anchoTabla, altoFila);
+            contexto.fillStyle = '#475569';
+            contexto.font = '22px Arial';
+            contexto.textAlign = 'center';
+            contexto.fillText(
+                'Sin materias inscritas al momento de generar este documento.',
+                margen + (anchoTabla / 2),
+                posicionY + (altoFila / 2)
+            );
+        }
+        filas.forEach((fila, indiceFila) => {
+            const posicionY = tablaSuperior + altoEncabezado + (indiceFila * altoFila);
+            contexto.fillStyle = indiceFila % 2 === 0 ? '#f8fafc' : '#ffffff';
+            contexto.fillRect(margen, posicionY, anchoTabla, altoFila);
+            contexto.strokeStyle = '#cbd5e1';
+            contexto.lineWidth = 2;
+            contexto.strokeRect(margen, posicionY, anchoTabla, altoFila);
+            posicionX = margen;
+            columnas.forEach((columna, indiceColumna) => {
+                if (indiceColumna > 0) {
+                    contexto.beginPath();
+                    contexto.moveTo(posicionX, posicionY);
+                    contexto.lineTo(posicionX, posicionY + altoFila);
+                    contexto.stroke();
+                }
+                contexto.fillStyle = '#1e293b';
+                contexto.font = indiceColumna === columnas.length - 1
+                    ? 'bold 23px Arial'
+                    : '22px Arial';
+                contexto.textAlign = indiceColumna < 2 ? 'left' : 'center';
+                const textoX = indiceColumna < 2
+                    ? posicionX + 18
+                    : posicionX + (columna.ancho / 2);
+                contexto.fillText(
+                    recortarTextoCanvas(contexto, fila[indiceColumna] || '', columna.ancho - 32),
+                    textoX,
+                    posicionY + (altoFila / 2)
+                );
+                posicionX += columna.ancho;
+            });
+        });
+
+        contexto.fillStyle = '#64748b';
+        contexto.font = '18px Arial';
+        contexto.textAlign = 'right';
+        contexto.fillText('Documento generado por SiCECOBAEJ 65', margen + anchoTabla, alto - 45);
+        return canvas;
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA EXPORTAR EL CANVAS TABULAR COMO PNG O JPG
+    ------------------------------------------------------------- */
+
+    function exportarImagen(formato) {
+        const canvas = construirCanvasKardex();
         return new Promise((resolve, reject) => {
             canvas.toBlob((blob) => {
                 if (!blob) {
