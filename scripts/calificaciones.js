@@ -17,7 +17,30 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     ------------------------------------------------------------- */
 
     function formatearCalificacion(valor) {
-        return valor === null || valor === undefined ? 'Pendiente' : Number(valor).toFixed(2);
+        const calificacion = Number(valor);
+        return valor === null || valor === undefined || !Number.isFinite(calificacion)
+            ? 'Pendiente'
+            : calificacion.toFixed(2);
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA MOSTRAR UN TEXTO DISPONIBLE O UNA ETIQUETA PENDIENTE
+    ------------------------------------------------------------- */
+
+    function obtenerTextoDisponible(valor, pendiente = 'Pendiente') {
+        const texto = String(valor ?? '').trim();
+        return texto || pendiente;
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA GENERAR UN NOMBRE DE ARCHIVO SEGURO PARA EL KARDEX
+    ------------------------------------------------------------- */
+
+    function obtenerNombreArchivoKardex() {
+        const identificador = kardexActual?.alumno?.numero_control
+            || kardexActual?.alumno?.id
+            || 'sin-control';
+        return `kardex-${String(identificador).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
     }
 
     /* -------------------------------------------------------------
@@ -50,9 +73,9 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     function renderizarResumenAlumno(alumno) {
         resumenAlumno.replaceChildren();
         const datos = [
-            ['Nombre', alumno.nombre],
-            ['Correo', alumno.correo],
-            ['Número de control', alumno.numero_control],
+            ['Nombre', obtenerTextoDisponible(alumno.nombre)],
+            ['Correo', obtenerTextoDisponible(alumno.correo)],
+            ['Número de control', obtenerTextoDisponible(alumno.numero_control)],
             ['Ciclo de ingreso', alumno.periodoIngreso?.nombre_ciclo || 'Pendiente']
         ];
         datos.forEach(([etiqueta, valor]) => {
@@ -72,12 +95,22 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     ------------------------------------------------------------- */
 
     function renderizarKardex(kardex) {
-        kardexActual = { ...kardex, filas: agruparMaterias(kardex.materias) };
-        renderizarResumenAlumno(kardex.alumno);
+        const materias = Array.isArray(kardex.materias) ? kardex.materias : [];
+        kardexActual = { ...kardex, materias, filas: agruparMaterias(materias) };
+        renderizarResumenAlumno(kardex.alumno || {});
         tabla.replaceChildren();
         if (!kardexActual.filas.length) {
-            api.mostrarTablaVacia(tabla, 7, 'El alumno todavía no tiene materias inscritas.');
-            acciones.classList.add('hidden');
+            api.mostrarTablaVacia(
+                tabla,
+                7,
+                'Todavía no hay materias inscritas. El kardex puede descargarse con la información disponible.'
+            );
+            acciones.classList.remove('hidden');
+            api.mostrarMensaje(
+                mensaje,
+                'Este es un kardex parcial. Las materias y calificaciones faltantes aparecerán como pendientes.',
+                'warning'
+            );
             return;
         }
         kardexActual.filas.forEach((fila) => {
@@ -92,6 +125,16 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
             tabla.appendChild(registro);
         });
         acciones.classList.remove('hidden');
+
+        if (kardex.resumen?.parcial) {
+            api.mostrarMensaje(
+                mensaje,
+                `Kardex parcial: ${kardex.resumen.unidadesCalificadas || 0} de ${kardex.resumen.totalUnidades || 0} unidades cuentan con calificación.`,
+                'warning'
+            );
+        } else {
+            api.ocultarMensaje(mensaje);
+        }
     }
 
     /* -------------------------------------------------------------
@@ -163,20 +206,23 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     ------------------------------------------------------------- */
 
     function construirLineasExportacion() {
-        const alumno = kardexActual.alumno;
+        const alumno = kardexActual.alumno || {};
         const lineas = [
             'SiCECOBAEJ 65 - Kardex académico',
-            `Nombre: ${alumno.nombre}`,
-            `Correo: ${alumno.correo}`,
-            `Número de control: ${alumno.numero_control}`,
+            `Nombre: ${obtenerTextoDisponible(alumno.nombre)}`,
+            `Correo: ${obtenerTextoDisponible(alumno.correo)}`,
+            `Número de control: ${obtenerTextoDisponible(alumno.numero_control)}`,
             `Ciclo de ingreso: ${alumno.periodoIngreso?.nombre_ciclo || 'Pendiente'}`,
             '',
             'Periodo | Materia | Sem./Grupo | U1 | U2 | U3 | General'
         ];
+        if (!kardexActual.filas.length) {
+            lineas.push('Sin materias inscritas al momento de generar este documento.');
+        }
         kardexActual.filas.forEach((fila) => lineas.push([
-            fila.periodo,
-            fila.materia,
-            `${fila.semestre}° ${fila.grupo}`,
+            obtenerTextoDisponible(fila.periodo),
+            obtenerTextoDisponible(fila.materia),
+            `${obtenerTextoDisponible(fila.semestre)}° ${obtenerTextoDisponible(fila.grupo)}`,
             formatearCalificacion(fila.unidades[1]),
             formatearCalificacion(fila.unidades[2]),
             formatearCalificacion(fila.unidades[3]),
@@ -190,12 +236,81 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     ------------------------------------------------------------- */
 
     function descargarBlob(blob, nombre) {
+        if (!(blob instanceof Blob)) {
+            throw new Error('El navegador no pudo construir el archivo solicitado.');
+        }
         const url = URL.createObjectURL(blob);
         const enlace = document.createElement('a');
         enlace.href = url;
         enlace.download = nombre;
+        document.body.appendChild(enlace);
         enlace.click();
+        enlace.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA NORMALIZAR TEXTO A CARACTERES COMPATIBLES CON PDF
+    ------------------------------------------------------------- */
+
+    function normalizarTextoPdf(texto) {
+        return String(texto)
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\x20-\x7E]/g, '?')
+            .replace(/\\/g, '\\\\')
+            .replace(/\(/g, '\\(')
+            .replace(/\)/g, '\\)');
+    }
+
+    /* -------------------------------------------------------------
+    METODO PARA CONSTRUIR UN PDF NATIVO SIN DEPENDENCIAS EXTERNAS
+    ------------------------------------------------------------- */
+
+    function construirPdfNativo(lineas) {
+        const lineasPorPagina = 24;
+        const paginas = [];
+        for (let indice = 0; indice < lineas.length; indice += lineasPorPagina) {
+            paginas.push(lineas.slice(indice, indice + lineasPorPagina));
+        }
+        if (!paginas.length) paginas.push(['Kardex sin información disponible.']);
+
+        const objetos = [];
+        const referenciasPaginas = [];
+        objetos[1] = '<< /Type /Catalog /Pages 2 0 R >>';
+        objetos[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+
+        paginas.forEach((pagina, indicePagina) => {
+            const paginaId = 4 + (indicePagina * 2);
+            const contenidoId = paginaId + 1;
+            referenciasPaginas.push(`${paginaId} 0 R`);
+            const instrucciones = ['BT', '/F1 10 Tf', '40 570 Td'];
+            pagina.forEach((linea, indiceLinea) => {
+                if (indiceLinea > 0) instrucciones.push('0 -21 Td');
+                instrucciones.push(`(${normalizarTextoPdf(linea)}) Tj`);
+            });
+            instrucciones.push('ET');
+            const contenido = instrucciones.join('\n');
+            objetos[paginaId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contenidoId} 0 R >>`;
+            objetos[contenidoId] = `<< /Length ${contenido.length} >>\nstream\n${contenido}\nendstream`;
+        });
+
+        objetos[2] = `<< /Type /Pages /Kids [${referenciasPaginas.join(' ')}] /Count ${referenciasPaginas.length} >>`;
+        let documento = '%PDF-1.4\n';
+        const posiciones = [0];
+        for (let id = 1; id < objetos.length; id += 1) {
+            posiciones[id] = documento.length;
+            documento += `${id} 0 obj\n${objetos[id]}\nendobj\n`;
+        }
+        const inicioXref = documento.length;
+        documento += `xref\n0 ${objetos.length}\n`;
+        documento += '0000000000 65535 f \n';
+        for (let id = 1; id < objetos.length; id += 1) {
+            documento += `${String(posiciones[id]).padStart(10, '0')} 00000 n \n`;
+        }
+        documento += `trailer\n<< /Size ${objetos.length} /Root 1 0 R >>\n`;
+        documento += `startxref\n${inicioXref}\n%%EOF`;
+        return new Blob([documento], { type: 'application/pdf' });
     }
 
     /* -------------------------------------------------------------
@@ -203,19 +318,8 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
     ------------------------------------------------------------- */
 
     function exportarPdf() {
-        const { jsPDF } = window.jspdf;
-        const documento = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'letter' });
-        const lineas = construirLineasExportacion();
-        let y = 15;
-        lineas.forEach((linea, indice) => {
-            if (y > 195) { documento.addPage(); y = 15; }
-            documento.setFont('helvetica', indice === 0 ? 'bold' : 'normal');
-            documento.setFontSize(indice === 0 ? 16 : 9);
-            const segmentos = documento.splitTextToSize(linea, 250);
-            documento.text(segmentos, 14, y);
-            y += segmentos.length * 5;
-        });
-        documento.save(`kardex-${kardexActual.alumno.numero_control}.pdf`);
+        const pdf = construirPdfNativo(construirLineasExportacion());
+        descargarBlob(pdf, `${obtenerNombreArchivoKardex()}.pdf`);
     }
 
     /* -------------------------------------------------------------
@@ -238,21 +342,39 @@ MODULO DE KARDEX, CONSULTA DE CALIFICACIONES Y EXPORTACIONES
             contexto.font = indice === 0 ? 'bold 38px Arial' : '24px Arial';
             contexto.fillText(linea, 60, 70 + indice * 42, ancho - 120);
         });
-        canvas.toBlob((blob) => descargarBlob(
-            blob,
-            `kardex-${kardexActual.alumno.numero_control}.${formato}`
-        ), formato === 'jpg' ? 'image/jpeg' : 'image/png', 0.94);
+        return new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    reject(new Error('El navegador no pudo generar la imagen del kardex.'));
+                    return;
+                }
+                descargarBlob(blob, `${obtenerNombreArchivoKardex()}.${formato}`);
+                resolve();
+            }, formato === 'jpg' ? 'image/jpeg' : 'image/png', 0.94);
+        });
     }
 
     /* -------------------------------------------------------------
     METODO PARA PROCESAR EL FORMATO DE EXPORTACION SELECCIONADO
     ------------------------------------------------------------- */
 
-    function manejarExportacion(evento) {
+    async function manejarExportacion(evento) {
         const boton = evento.target.closest('[data-exportar]');
         if (!boton || !kardexActual) return;
-        if (boton.dataset.exportar === 'pdf') exportarPdf();
-        else exportarImagen(boton.dataset.exportar);
+        const botones = Array.from(acciones.querySelectorAll('[data-exportar]'));
+        botones.forEach((elemento) => { elemento.disabled = true; });
+        try {
+            if (boton.dataset.exportar === 'pdf') exportarPdf();
+            else await exportarImagen(boton.dataset.exportar);
+        } catch (error) {
+            api.mostrarMensaje(
+                mensaje,
+                error.message || 'No fue posible generar el kardex.',
+                'error'
+            );
+        } finally {
+            botones.forEach((elemento) => { elemento.disabled = false; });
+        }
     }
 
     alumnoSelect.addEventListener('change', () => {

@@ -11,11 +11,11 @@ Cliente web estático construido con HTML, CSS y JavaScript. Utiliza Remix Icon 
 - Cursos por materia, grupo y periodo, con inscripción compatible.
 - Tres unidades por curso, actividades, rúbricas y materiales de apoyo.
 - Captura docente de calificaciones y normalización sobre 100.
-- Kardex completo con exportación PDF, PNG y JPG.
+- Kardex parcial o completo con exportación PDF, PNG y JPG.
 
 ## Dependencias de interfaz
 
-Remix Icon y jsPDF se cargan mediante CDN desde `interfaces/dashboard.html`. No se utiliza Bootstrap.
+Remix Icon se carga mediante CDN desde `interfaces/dashboard.html`. No se utiliza Bootstrap. Los archivos del kardex se generan directamente en el navegador sin depender de una biblioteca PDF externa.
 
 ## Despliegue
 
