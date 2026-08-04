@@ -8,6 +8,8 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     const paginacion = document.getElementById('paginacion-cursos');
     const mensajeCursos = document.getElementById('mensaje-cursos');
     const botonNuevoCurso = document.getElementById('nuevo-curso');
+    const filtroHistorico = document.getElementById('filtro-historico-cursos');
+    const alcanceSelect = document.getElementById('alcance-cursos');
     const vistaCursos = document.getElementById('vista-cursos');
     const vistaDetalle = document.getElementById('vista-curso-detalle');
     const modalCurso = document.getElementById('modal-curso');
@@ -34,6 +36,7 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     let opcionesCurso = null;
     let cursoSeleccionado = null;
     let cursoPendienteInscripcion = null;
+    let cursoEditandoId = null;
     let alumnoCalificando = null;
     let actividadCalificando = null;
     let urlsPrevisualizacion = [];
@@ -169,7 +172,7 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     function renderizarCursos(registros) {
         tablaCursos.replaceChildren();
         if (!registros.length) {
-            api.mostrarTablaVacia(tablaCursos, 5, 'No existen cursos disponibles.');
+            api.mostrarTablaVacia(tablaCursos, api.obtenerPerfil()?.tipo === 'docente' ? 6 : 5, 'No existen cursos disponibles.');
             return;
         }
         registros.forEach((curso) => {
@@ -180,6 +183,8 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
             enlace.className = 'course-link';
             enlace.dataset.cursoId = curso.id;
             enlace.textContent = curso.materia.nombre;
+            enlace.disabled = api.obtenerPerfil()?.tipo === 'docente' && !curso.administrable;
+            if (enlace.disabled) enlace.title = 'Vista histórica de un curso administrado por otro docente';
             celdaMateria.dataset.label = 'Materia';
             celdaMateria.appendChild(enlace);
             fila.appendChild(celdaMateria);
@@ -189,7 +194,30 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
                 curso.docentesCurso.map((registro) => registro.docente?.nombre).filter(Boolean).join(', ') || 'Sin asignar',
                 'Docentes'
             ));
-            fila.appendChild(api.crearCelda(curso.inscrito ? 'Disponible' : 'Inscripción requerida', 'Estado'));
+            if (api.obtenerPerfil()?.tipo === 'docente') {
+                const acciones = document.createElement('td');
+                acciones.dataset.label = 'Acciones';
+                if (curso.administrable) {
+                    const editar = document.createElement('button');
+                    editar.type = 'button';
+                    editar.className = 'icon-button';
+                    editar.dataset.editarCurso = curso.id;
+                    editar.title = 'Editar curso';
+                    editar.setAttribute('aria-label', 'Editar curso');
+                    editar.innerHTML = '<i class="ri-edit-line"></i>';
+                    acciones.appendChild(editar);
+                } else {
+                    acciones.textContent = 'Solo lectura';
+                }
+                fila.appendChild(acciones);
+            }
+            fila.appendChild(api.crearCelda(
+                api.obtenerPerfil()?.tipo === 'docente'
+                    ? curso.estado_ciclo
+                    : curso.inscrito ? 'Disponible' : 'Inscripción requerida',
+                'Estado',
+                curso.estado_ciclo === 'Activo' ? 'status-active' : 'status-inactive'
+            ));
             tablaCursos.appendChild(fila);
         });
     }
@@ -201,15 +229,17 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     async function cargar() {
         api.ocultarMensaje(mensajeCursos);
         botonNuevoCurso.classList.toggle('hidden', api.obtenerPerfil()?.tipo !== 'docente');
-        api.mostrarTablaVacia(tablaCursos, 5, 'Cargando cursos...');
+        filtroHistorico.classList.toggle('hidden', api.obtenerPerfil()?.tipo !== 'docente');
+        api.mostrarTablaVacia(tablaCursos, api.obtenerPerfil()?.tipo === 'docente' ? 6 : 5, 'Cargando cursos...');
         try {
-            const { response, resultado } = await api.solicitarApi(`/cursos?pagina=${pagina}&limite=10`);
+            const alcance = api.obtenerPerfil()?.tipo === 'docente' ? alcanceSelect.value : 'active';
+            const { response, resultado } = await api.solicitarApi(`/cursos?pagina=${pagina}&limite=10&scope=${alcance}`);
             if (!response.ok) throw new Error(resultado.mensaje || 'No fue posible cargar los cursos');
             cursos = resultado.cursos;
             renderizarCursos(cursos);
             api.actualizarPaginacion(paginacion, resultado.paginacion);
         } catch (error) {
-            api.mostrarTablaVacia(tablaCursos, 5, 'No fue posible cargar los cursos.');
+            api.mostrarTablaVacia(tablaCursos, api.obtenerPerfil()?.tipo === 'docente' ? 6 : 5, 'No fue posible cargar los cursos.');
             api.mostrarMensaje(mensajeCursos, error.message, 'error');
         }
     }
@@ -219,11 +249,14 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     ------------------------------------------------------------- */
 
     async function abrirNuevoCurso() {
+        cursoEditandoId = null;
         api.ocultarMensaje(mensajeModalCurso);
         try {
             const { response, resultado } = await api.solicitarApi('/cursos/opciones');
             if (!response.ok) throw new Error(resultado.mensaje || 'No fue posible cargar las opciones');
             opcionesCurso = resultado;
+            document.getElementById('modal-curso-title').textContent = 'Nuevo curso';
+            document.getElementById('guardar-curso').textContent = 'Crear curso';
             materiaSelect.replaceChildren();
             agregarOpcion(materiaSelect, '', 'Selecciona una materia');
             resultado.materias.forEach((materia) => agregarOpcion(
@@ -239,6 +272,39 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     }
 
     /* -------------------------------------------------------------
+    METODO PARA ABRIR LA EDICION DE UN CURSO ADMINISTRADO
+    ------------------------------------------------------------- */
+
+    async function abrirEdicionCurso(curso) {
+        cursoEditandoId = curso.id;
+        api.ocultarMensaje(mensajeModalCurso);
+        try {
+            const { response, resultado } = await api.solicitarApi('/cursos/opciones?scope=all');
+            if (!response.ok) throw new Error(resultado.mensaje || 'No fue posible cargar las opciones');
+            opcionesCurso = resultado;
+            materiaSelect.replaceChildren();
+            agregarOpcion(materiaSelect, '', 'Selecciona una materia');
+            resultado.materias.forEach((materia) => agregarOpcion(
+                materiaSelect,
+                materia.id,
+                `${materia.nombre} · ${materia.grado_semestre}° · ${resultado.periodos.find((periodo) => String(periodo.id) === String(materia.periodo_id))?.nombre_ciclo || 'Ciclo'}`
+            ));
+            materiaSelect.value = String(curso.materia.id);
+            actualizarGruposCompatibles();
+            grupoSelect.value = String(curso.grupo.id);
+            const seleccionados = new Set(curso.docentesCurso.map((registro) => String(registro.docente_id)));
+            docentesCursoContenedor.querySelectorAll('input').forEach((selector) => {
+                selector.checked = seleccionados.has(String(selector.value));
+            });
+            document.getElementById('modal-curso-title').textContent = 'Editar curso';
+            document.getElementById('guardar-curso').textContent = 'Guardar cambios';
+            alternarModal(modalCurso, true);
+        } catch (error) {
+            api.mostrarMensaje(mensajeCursos, error.message, 'error');
+        }
+    }
+
+    /* -------------------------------------------------------------
     METODO PARA FILTRAR GRUPOS CON EL MISMO SEMESTRE DE LA MATERIA
     ------------------------------------------------------------- */
 
@@ -247,7 +313,8 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
         grupoSelect.replaceChildren();
         agregarOpcion(grupoSelect, '', materia ? 'Selecciona un grupo' : 'Selecciona primero una materia');
         opcionesCurso?.grupos
-            .filter((grupo) => String(grupo.grado_semestre) === String(materia?.grado_semestre))
+            .filter((grupo) => String(grupo.grado_semestre) === String(materia?.grado_semestre)
+                && String(grupo.periodo_id) === String(materia?.periodo_id))
             .forEach((grupo) => agregarOpcion(grupoSelect, grupo.id, `${grupo.grado_semestre}${grupo.division}`));
         grupoSelect.disabled = !materia;
         renderizarDocentesCurso(materia);
@@ -298,8 +365,8 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     async function crearCurso(evento) {
         evento.preventDefault();
         try {
-            const { response, resultado } = await api.solicitarApi('/cursos', {
-                method: 'POST',
+            const { response, resultado } = await api.solicitarApi(cursoEditandoId ? `/cursos/${cursoEditandoId}` : '/cursos', {
+                method: cursoEditandoId ? 'PATCH' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     materia_id: Number(materiaSelect.value),
@@ -309,6 +376,7 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
             });
             if (!response.ok) throw new Error(resultado.mensaje || 'No fue posible crear el curso');
             alternarModal(modalCurso, false);
+            cursoEditandoId = null;
             await cargar();
             api.mostrarMensaje(mensajeCursos, resultado.mensaje, 'success');
         } catch (error) {
@@ -321,6 +389,12 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
     ------------------------------------------------------------- */
 
     async function manejarCurso(evento) {
+        const editar = evento.target.closest('[data-editar-curso]');
+        if (editar) {
+            const curso = cursos.find((registro) => String(registro.id) === editar.dataset.editarCurso);
+            if (curso) await abrirEdicionCurso(curso);
+            return;
+        }
         const boton = evento.target.closest('[data-curso-id]');
         if (!boton) return;
         const curso = cursos.find((registro) => String(registro.id) === boton.dataset.cursoId);
@@ -396,7 +470,13 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
             cursoSeleccionado = resultado.curso;
             document.getElementById('curso-detalle-title').textContent = cursoSeleccionado.materia.nombre;
             document.getElementById('curso-detalle-meta').textContent = `Grupo ${cursoSeleccionado.grupo.grado_semestre}${cursoSeleccionado.grupo.division} · ${cursoSeleccionado.periodo.nombre_ciclo}`;
-            document.getElementById('nueva-actividad').classList.toggle('hidden', resultado.rol !== 'docente');
+            const permiteEdicion = resultado.rol === 'docente' && cursoSeleccionado.periodo.activo;
+            document.getElementById('nueva-actividad').classList.toggle('hidden', !permiteEdicion);
+            if (resultado.rol === 'docente' && !cursoSeleccionado.periodo.activo) {
+                api.mostrarMensaje(mensajeDetalle, 'Este curso pertenece a un ciclo inactivo y se encuentra disponible únicamente para consulta.', 'info');
+            } else {
+                api.ocultarMensaje(mensajeDetalle);
+            }
             renderizarUnidades(cursoSeleccionado.unidades);
             vistaCursos.classList.add('hidden');
             vistaDetalle.classList.remove('hidden');
@@ -568,6 +648,8 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
             const accion = document.createElement('td');
             const boton = document.createElement('button');
             accion.dataset.label = 'Acciones'; boton.type = 'button'; boton.className = 'secondary-button compact-button'; boton.dataset.calificarAlumno = alumno.inscripcion_materia_id; boton.textContent = 'Calificar'; accion.appendChild(boton); fila.appendChild(accion);
+            boton.disabled = !cursoSeleccionado.periodo.activo;
+            if (boton.disabled) boton.title = 'El ciclo del curso está inactivo';
             tablaAlumnos.appendChild(fila);
         });
         if (!resultado.alumnos.length) api.mostrarTablaVacia(tablaAlumnos, 7, 'Todavía no hay alumnos inscritos.');
@@ -647,10 +729,18 @@ MODULO DE CURSOS, INSCRIPCIONES, ACTIVIDADES Y CAPTURA DOCENTE
         alternarModal(modales[boton.dataset.cerrarModal], false);
     }
 
-    document.addEventListener('perfil-cargado', (evento) => botonNuevoCurso.classList.toggle('hidden', evento.detail.tipo !== 'docente'));
+    document.addEventListener('perfil-cargado', (evento) => {
+        const esDocente = evento.detail.tipo === 'docente';
+        botonNuevoCurso.classList.toggle('hidden', !esDocente);
+        document.querySelectorAll('#vista-cursos .teacher-only-column').forEach((columna) => columna.classList.toggle('hidden', !esDocente));
+    });
     botonNuevoCurso.addEventListener('click', abrirNuevoCurso);
     materiaSelect.addEventListener('change', actualizarGruposCompatibles);
     document.getElementById('form-curso').addEventListener('submit', crearCurso);
+    alcanceSelect.addEventListener('change', () => {
+        pagina = 1;
+        cargar();
+    });
     tablaCursos.addEventListener('click', manejarCurso);
     document.getElementById('confirmar-inscripcion').addEventListener('click', confirmarInscripcion);
     document.getElementById('volver-cursos').addEventListener('click', volverCursos);

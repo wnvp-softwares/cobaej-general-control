@@ -39,6 +39,9 @@ const privacidadAlumnos = document.getElementById('descripcion-privacidad-alumno
 const paginacionDocentes = document.getElementById('paginacion-docentes');
 const paginacionMaterias = document.getElementById('paginacion-materias');
 const paginacionAlumnos = document.getElementById('paginacion-alumnos');
+const filtroHistoricoMaterias = document.getElementById('filtro-historico-materias');
+const alcanceMateriasSelect = document.getElementById('alcance-materias');
+const columnasSoloDocente = Array.from(document.querySelectorAll('.teacher-only-column'));
 
 const nuevaMateriaBtn = document.getElementById('nueva-materia');
 const encabezadoAccionesMateria = document.getElementById('encabezado-acciones-materia');
@@ -47,6 +50,7 @@ const editorMateriaTitle = document.getElementById('editor-materia-title');
 const materiaNombreInput = document.getElementById('materia-nombre');
 const materiaSemestreInput = document.getElementById('materia-semestre');
 const materiaHorasInput = document.getElementById('materia-horas');
+const materiaPeriodoInput = document.getElementById('materia-periodo');
 const docentesMateria = document.getElementById('docentes-materia');
 const cancelarMateriaBtn = document.getElementById('cancelar-materia');
 const descartarMateriaBtn = document.getElementById('descartar-materia');
@@ -89,6 +93,7 @@ let materiasActuales = [];
 let docentesDisponibles = null;
 let materiaEditandoId = null;
 let opcionesConfiguracion = null;
+let periodosMaterias = [];
 
 /* -------------------------------------------------------------
 METODO PARA MOSTRAR UN MENSAJE EN UN CONTENEDOR
@@ -267,6 +272,8 @@ function renderizarPerfil(perfil) {
     privacidadAlumnos.textContent = esDocente
         ? 'Alumnos registrados con sus datos académicos de identificación.'
         : 'Por privacidad, el correo y parte del número de control de otros alumnos permanecen ocultos.';
+    filtroHistoricoMaterias.classList.toggle('hidden', !esDocente);
+    columnasSoloDocente.forEach((columna) => columna.classList.toggle('hidden', !esDocente));
 
     imagenInput.value = '';
     document.dispatchEvent(new CustomEvent('perfil-cargado', { detail: perfil }));
@@ -577,7 +584,7 @@ function renderizarMaterias(materias) {
     if (materias.length === 0) {
         mostrarTablaVacia(
             tablaMaterias,
-            perfilActual?.tipo === 'docente' ? 5 : 4,
+            perfilActual?.tipo === 'docente' ? 7 : 6,
             'No existen materias registradas.'
         );
         return;
@@ -598,6 +605,8 @@ function renderizarMaterias(materias) {
             String(materia.horas_semanales),
             'Horas semanales'
         ));
+        fila.appendChild(crearCelda(materia.periodo?.nombre_ciclo || 'Sin ciclo', 'Ciclo'));
+        fila.appendChild(crearCelda(materia.estado_ciclo || 'Inactivo', 'Estado', materia.estado_ciclo === 'Activo' ? 'status-active' : 'status-inactive'));
         fila.appendChild(celdaDocentes);
 
         if (perfilActual?.tipo === 'docente') {
@@ -625,17 +634,19 @@ METODO PARA CARGAR UNA PAGINA DEL LISTADO DE MATERIAS
 
 async function cargarMaterias() {
     ocultarMensaje(mensajeMaterias);
-    const columnas = perfilActual?.tipo === 'docente' ? 5 : 4;
+    const columnas = perfilActual?.tipo === 'docente' ? 7 : 6;
     mostrarTablaVacia(tablaMaterias, columnas, 'Cargando materias...');
 
     try {
-        const ruta = `/academico/materias?pagina=${paginas.materias}&limite=${LIMITE_POR_PAGINA}`;
+        const alcance = perfilActual?.tipo === 'docente' ? alcanceMateriasSelect.value : 'active';
+        const ruta = `/academico/materias?pagina=${paginas.materias}&limite=${LIMITE_POR_PAGINA}&scope=${alcance}`;
         const { response, resultado } = await solicitarApi(ruta);
 
         if (!response.ok) {
             throw new Error(resultado.mensaje || 'No fue posible cargar las materias');
         }
 
+        periodosMaterias = resultado.periodos || periodosMaterias;
         renderizarMaterias(resultado.materias);
         actualizarPaginacion(paginacionMaterias, resultado.paginacion);
     } catch (error) {
@@ -658,7 +669,7 @@ function renderizarAlumnos(alumnos) {
     if (alumnos.length === 0) {
         mostrarTablaVacia(
             tablaAlumnos,
-            4,
+            perfilActual?.tipo === 'docente' ? 6 : 4,
             'No existen alumnos registrados para mostrar.'
         );
         return;
@@ -677,6 +688,22 @@ function renderizarAlumnos(alumnos) {
             'Número de control',
             alumno.esPerfilPropio ? '' : 'private-value'
         ));
+        if (perfilActual?.tipo === 'docente') {
+            fila.appendChild(crearCelda(alumno.reprobado ? 'Reprobado' : 'Regular', 'Estado', alumno.reprobado ? 'student-failed' : 'status-active'));
+            const acciones = document.createElement('td');
+            const boton = document.createElement('button');
+            acciones.dataset.label = 'Acciones';
+            acciones.className = 'actions-column';
+            boton.type = 'button';
+            boton.className = alumno.reprobado ? 'row-action danger active' : 'row-action danger';
+            boton.dataset.reprobacionAlumno = alumno.id;
+            boton.dataset.reprobado = String(Boolean(alumno.reprobado));
+            boton.title = alumno.reprobado ? 'Retirar reprobación' : 'Marcar como reprobado';
+            boton.setAttribute('aria-label', boton.title);
+            boton.innerHTML = alumno.reprobado ? '<i class="ri-arrow-go-back-line"></i>' : '<i class="ri-close-circle-line"></i>';
+            acciones.appendChild(boton);
+            fila.appendChild(acciones);
+        }
         tablaAlumnos.appendChild(fila);
     });
 }
@@ -687,7 +714,8 @@ METODO PARA CARGAR UNA PAGINA DEL LISTADO DE ALUMNOS
 
 async function cargarAlumnos() {
     ocultarMensaje(mensajeAlumnos);
-    mostrarTablaVacia(tablaAlumnos, 4, 'Cargando alumnos...');
+    const columnas = perfilActual?.tipo === 'docente' ? 6 : 4;
+    mostrarTablaVacia(tablaAlumnos, columnas, 'Cargando alumnos...');
 
     try {
         const ruta = `/academico/alumnos?pagina=${paginas.alumnos}&limite=${LIMITE_POR_PAGINA}`;
@@ -700,7 +728,40 @@ async function cargarAlumnos() {
         renderizarAlumnos(resultado.alumnos);
         actualizarPaginacion(paginacionAlumnos, resultado.paginacion);
     } catch (error) {
-        mostrarTablaVacia(tablaAlumnos, 4, 'No fue posible cargar los datos.');
+        mostrarTablaVacia(tablaAlumnos, columnas, 'No fue posible cargar los datos.');
+        mostrarMensaje(mensajeAlumnos, error.message, 'error');
+    }
+}
+
+/* -------------------------------------------------------------
+METODO PARA APLICAR O RETIRAR LA REPROBACION DE UN ALUMNO
+------------------------------------------------------------- */
+
+async function manejarReprobacionAlumno(evento) {
+    const boton = evento.target.closest('[data-reprobacion-alumno]');
+    if (!boton || perfilActual?.tipo !== 'docente') return;
+    const estabaReprobado = boton.dataset.reprobado === 'true';
+    let motivo = '';
+    if (!estabaReprobado) {
+        const motivoRecibido = window.prompt('Motivo opcional de la reprobación:', '');
+        if (motivoRecibido === null) return;
+        motivo = motivoRecibido;
+        if (!window.confirm('¿Marcar al alumno como reprobado en el ciclo activo?')) return;
+    } else if (!window.confirm('¿Retirar la reprobación del alumno en el ciclo activo?')) {
+        return;
+    }
+    boton.disabled = true;
+    try {
+        const { response, resultado } = await solicitarApi(`/academico/alumnos/${boton.dataset.reprobacionAlumno}/reprobacion`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reprobado: !estabaReprobado, motivo: motivo.trim() })
+        });
+        if (!response.ok) throw new Error(resultado.mensaje || 'No fue posible actualizar la reprobación');
+        await cargarAlumnos();
+        mostrarMensaje(mensajeAlumnos, resultado.mensaje, 'success');
+    } catch (error) {
+        boton.disabled = false;
         mostrarMensaje(mensajeAlumnos, error.message, 'error');
     }
 }
@@ -791,6 +852,17 @@ async function abrirEditorMateria(materia = null) {
     materiaNombreInput.value = materia?.nombre || '';
     materiaSemestreInput.value = materia?.grado_semestre || '1';
     materiaHorasInput.value = materia?.horas_semanales || 1;
+    materiaPeriodoInput.disabled = !materia;
+    materiaPeriodoInput.replaceChildren();
+    periodosMaterias.forEach((periodo) => {
+        const opcion = document.createElement('option');
+        opcion.value = periodo.id;
+        opcion.textContent = `${periodo.nombre_ciclo}${periodo.activo ? ' · Activo' : ''}`;
+        opcion.selected = materia
+            ? String(periodo.id) === String(materia.periodo_id)
+            : Boolean(periodo.activo);
+        materiaPeriodoInput.appendChild(opcion);
+    });
     formMateria.classList.remove('hidden');
     guardarMateriaBtn.disabled = true;
 
@@ -815,6 +887,7 @@ METODO PARA CERRAR Y LIMPIAR EL EDITOR DE MATERIAS
 function cerrarEditorMateria() {
     materiaEditandoId = null;
     formMateria.reset();
+    materiaPeriodoInput.disabled = false;
     docentesMateria.replaceChildren();
     formMateria.classList.add('hidden');
 }
@@ -831,6 +904,7 @@ async function guardarMateria(evento) {
         nombre: materiaNombreInput.value.trim(),
         grado_semestre: materiaSemestreInput.value,
         horas_semanales: Number(materiaHorasInput.value),
+        periodo_id: Number(materiaPeriodoInput.value),
         docente_ids: obtenerDocentesSeleccionados()
     };
     const ruta = materiaEditandoId
@@ -905,6 +979,17 @@ function renderizarPerfilDirectorio(usuario) {
     perfilDirectorioNombre.textContent = usuario.nombre || 'Perfil';
     perfilDirectorioRol.textContent = usuario.tipo === 'docente' ? 'Docente' : 'Alumno';
     perfilDirectorioDatos.replaceChildren();
+    if (usuario.tipo === 'alumno' && usuario.reprobado) {
+        const alerta = document.createElement('div');
+        alerta.className = 'student-failed-alert';
+        alerta.innerHTML = '<i class="ri-error-warning-line"></i><strong>Alumno reprobado en el ciclo activo</strong>';
+        if (usuario.motivo_reprobacion) {
+            const motivo = document.createElement('span');
+            motivo.textContent = usuario.motivo_reprobacion;
+            alerta.appendChild(motivo);
+        }
+        perfilDirectorioDatos.appendChild(alerta);
+    }
     agregarDatoPerfilDirectorio('Correo', usuario.correo || 'Privado');
     if (usuario.tipo === 'docente') {
         agregarDatoPerfilDirectorio('Horas disponibles', String(usuario.horas_disponibles ?? 0));
@@ -984,6 +1069,9 @@ function cargarVista(nombreVista) {
 
     if (nombreVista === 'horarios') {
         window.HorariosDashboard?.cargar();
+    }
+    if (nombreVista === 'configuracion-cuenta') {
+        window.ConfiguracionDashboard?.cargar();
     }
 }
 
@@ -1221,6 +1309,11 @@ formMateria.addEventListener('submit', guardarMateria);
 tablaMaterias.addEventListener('click', manejarEdicionMateria);
 tablaDocentes.addEventListener('click', manejarEnlacePerfil);
 tablaAlumnos.addEventListener('click', manejarEnlacePerfil);
+tablaAlumnos.addEventListener('click', manejarReprobacionAlumno);
+alcanceMateriasSelect.addEventListener('change', () => {
+    paginas.materias = 1;
+    cargarMaterias();
+});
 controlesCerrarPerfilDirectorio.forEach((control) => {
     control.addEventListener('click', cerrarPerfilDirectorio);
 });
@@ -1240,5 +1333,6 @@ window.SiCEApi = {
     crearCelda,
     mostrarTablaVacia,
     actualizarPaginacion,
-    obtenerPerfil: () => perfilActual
+    obtenerPerfil: () => perfilActual,
+    recargarPerfil: cargarPerfil
 };

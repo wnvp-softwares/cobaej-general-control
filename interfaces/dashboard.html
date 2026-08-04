@@ -52,6 +52,10 @@
                 <i class="ri-calendar-line"></i>
                 <span>Horarios</span>
             </button>
+            <button class="navigation-button" type="button" data-vista="configuracion-cuenta">
+                <i class="ri-settings-3-line"></i>
+                <span>Configuración</span>
+            </button>
         </nav>
 
         <div class="header-actions">
@@ -222,6 +226,14 @@
 
             <div class="app-message hidden" id="mensaje-materias" role="status" aria-live="polite"></div>
 
+            <div class="catalog-filter hidden" id="filtro-historico-materias">
+                <label for="alcance-materias">Contenido mostrado</label>
+                <select class="standard-input" id="alcance-materias">
+                    <option value="active">Materias del ciclo vigente</option>
+                    <option value="all">Historial de todos los ciclos</option>
+                </select>
+            </div>
+
             <form class="inline-editor hidden" id="form-materia">
                 <div class="editor-heading">
                     <div>
@@ -253,6 +265,10 @@
                         <label for="materia-horas">Horas semanales</label>
                         <input class="standard-input" id="materia-horas" type="number" min="1" step="1" required>
                     </div>
+                    <div class="field-group">
+                        <label for="materia-periodo">Ciclo escolar</label>
+                        <select class="standard-input" id="materia-periodo" required></select>
+                    </div>
                 </div>
 
                 <fieldset class="teacher-selector">
@@ -276,6 +292,8 @@
                             <th>Materia</th>
                             <th>Semestre</th>
                             <th>Horas semanales</th>
+                            <th>Ciclo</th>
+                            <th>Estado</th>
                             <th>Docentes</th>
                             <th class="actions-column hidden" id="encabezado-acciones-materia">Acciones</th>
                         </tr>
@@ -316,6 +334,8 @@
                             <th>Correo</th>
                             <th>Ciclo de ingreso</th>
                             <th>Número de control</th>
+                            <th class="teacher-only-column hidden">Estado</th>
+                            <th class="teacher-only-column hidden">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-alumnos"></tbody>
@@ -347,9 +367,16 @@
                 </button>
             </div>
             <div class="app-message hidden" id="mensaje-cursos" role="status" aria-live="polite"></div>
+            <div class="catalog-filter hidden" id="filtro-historico-cursos">
+                <label for="alcance-cursos">Contenido mostrado</label>
+                <select class="standard-input" id="alcance-cursos">
+                    <option value="active">Cursos del ciclo vigente</option>
+                    <option value="all">Historial de todos los ciclos</option>
+                </select>
+            </div>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>Materia</th><th>Grupo</th><th>Periodo</th><th>Docentes</th><th>Estado</th></tr></thead>
+                    <thead><tr><th>Materia</th><th>Grupo</th><th>Periodo</th><th>Docentes</th><th>Estado</th><th class="teacher-only-column hidden">Acciones</th></tr></thead>
                     <tbody id="tabla-cursos"></tbody>
                 </table>
             </div>
@@ -499,6 +526,39 @@
 
             <div class="schedule-table-wrapper" id="contenedor-tabla-horario"></div>
         </section>
+
+        <section class="content-card view-section hidden" id="vista-configuracion-cuenta" aria-labelledby="configuracion-cuenta-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Seguridad y cuenta</p>
+                    <h1 id="configuracion-cuenta-title">Configuración</h1>
+                    <p>Administra los datos sensibles de tu cuenta. Todos los cambios requieren tu contraseña actual.</p>
+                </div>
+            </div>
+            <div class="app-message hidden" id="mensaje-configuracion-cuenta" role="status" aria-live="polite"></div>
+            <form class="settings-form" id="form-configuracion-cuenta">
+                <section class="settings-group">
+                    <div><p class="eyebrow">Identidad</p><h2>Datos de acceso</h2></div>
+                    <div class="settings-grid">
+                        <div class="field-group"><label for="config-correo">Correo</label><input class="standard-input" id="config-correo" type="email" maxlength="100" required><small>Cambiarlo cerrará la sesión y solicitará una nueva verificación.</small></div>
+                        <div class="field-group hidden" id="campo-config-control"><label for="config-control">Número de control</label><input class="standard-input" id="config-control" maxlength="50"></div>
+                        <div class="field-group hidden" id="campo-config-clave-docente"><label for="config-clave-docente">Clave docente</label><input class="standard-input" id="config-clave-docente" maxlength="10"><small>La nueva clave debe existir y estar disponible.</small></div>
+                        <div class="field-group hidden" id="campo-config-ciclo"><label for="config-ciclo">Ciclo de ingreso</label><select class="standard-input" id="config-ciclo"></select></div>
+                    </div>
+                </section>
+                <section class="settings-group">
+                    <div><p class="eyebrow">Contraseña</p><h2>Actualizar contraseña</h2></div>
+                    <div class="settings-grid">
+                        <div class="field-group"><label for="config-nueva-clave">Nueva contraseña</label><input class="standard-input" id="config-nueva-clave" type="password" minlength="8" autocomplete="new-password"></div>
+                        <div class="field-group"><label for="config-confirmar-clave">Confirmar nueva contraseña</label><input class="standard-input" id="config-confirmar-clave" type="password" minlength="8" autocomplete="new-password"></div>
+                    </div>
+                </section>
+                <section class="settings-confirmation">
+                    <div class="field-group"><label for="config-clave-actual">Contraseña actual</label><input class="standard-input" id="config-clave-actual" type="password" autocomplete="current-password" required><small>Se utiliza únicamente para autorizar esta actualización.</small></div>
+                    <button class="primary-button" id="guardar-configuracion-cuenta" type="submit"><i class="ri-shield-check-line"></i> Guardar cambios</button>
+                </section>
+            </form>
+        </section>
     </main>
 
     <div class="modal-backdrop hidden" id="modal-perfil-directorio" role="dialog" aria-modal="true" aria-labelledby="perfil-directorio-nombre">
@@ -532,7 +592,7 @@
                     <legend>Docentes que aparecerán en el horario del grupo</legend>
                     <div class="teacher-options" id="docentes-curso"></div>
                 </fieldset>
-                <div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="curso">Cancelar</button><button class="primary-button" type="submit">Crear curso</button></div>
+                <div class="form-actions compact"><button class="secondary-button" type="button" data-cerrar-modal="curso">Cancelar</button><button class="primary-button" id="guardar-curso" type="submit">Crear curso</button></div>
             </form>
         </section>
     </div>
@@ -627,6 +687,7 @@
     <script src="../scripts/cursos.js"></script>
     <script src="../scripts/calificaciones.js"></script>
     <script src="../scripts/horarios.js"></script>
+    <script src="../scripts/configuracion.js"></script>
 </body>
 
 </html>

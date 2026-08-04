@@ -5,15 +5,15 @@ DEFINICION DE VARIABLES Y TEMAS
 ------------------------------------------------------------- */
 
 :root {
-    --fondo-color: #F1F5F9;
-    --superficie-color: #FFFFFF;
-    --superficie-secundaria: #F8FAFC;
+    --fondo-color: #F3EFE6;
+    --superficie-color: #FFFDF7;
+    --superficie-secundaria: #F7F2E8;
     --texto-color: #334155;
     --texto-secundario: #64748B;
     --items-color: #4F46E5;
     --items-hover: #4338CA;
     --ref-color: #6366F1;
-    --borde-color: #E2E8F0;
+    --borde-color: #D9D1C2;
     --error-color: #DC2626;
     --success-color: #16A34A;
     --filtro: 0;

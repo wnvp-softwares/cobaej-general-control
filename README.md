@@ -6,7 +6,9 @@ Cliente web estático construido con HTML, CSS y JavaScript. Utiliza Remix Icon 
 
 - Registro, inicio de sesión y recuperación del flujo de verificación.
 - Perfil propio con edición exclusiva de datos no sensibles.
+- Configuración protegida de correo, contraseña e identificadores académicos.
 - Listados paginados de docentes, alumnos y materias.
+- Control docente de reprobaciones por ciclo y aviso privado en el perfil del alumno.
 - Configuración académica inicial del alumno.
 - Cursos por materia, grupo y periodo, con inscripción compatible.
 - Tres unidades por curso, actividades, rúbricas y materiales de apoyo.
@@ -15,6 +17,8 @@ Cliente web estático construido con HTML, CSS y JavaScript. Utiliza Remix Icon 
 - Ciclo escolar activo, módulos configurables y horarios generales por grupo.
 - Contadores de disponibilidad docente y horas restantes por materia.
 - Perfiles consultables desde los nombres de docentes y alumnos con privacidad por rol.
+- Catálogos vigentes por defecto e historial completo por ciclo para docentes.
+- Tema claro en tonos crema y tema oscuro adaptable.
 
 ## Dependencias de interfaz
 
